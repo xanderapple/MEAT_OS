@@ -1,0 +1,60 @@
+# Obsidian vault settings
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspaces.json
+
+# Mobile app appearance settings
+.obsidian/app.json
+.obsidian/appearance.json
+
+# Saved user state
+.obsidian/bookmarks.json
+.obsidian/graph.json
+.obsidian/community-plugins.json
+.obsidian/core-plugins.json
+.obsidian/core-plugins-migration.json
+.obsidian/types.json
+
+# Obsidian Sync-specific files
+.obsidian/sync.json
+
+# Cached files
+.obsidian/cache/
+.obsidian/images/
+.obsidian/icons/
+
+# Trash folder
+.trash/
+
+# Files that may contain user-specific paths or data
+**/*.conflict-*.*
+
+# Specific plugin data that shouldn't be synced
+.obsidian/plugins/dataview/data.json
+.obsidian/plugins/templater-obsidian/data.json
+.obsidian/plugins/periodic-notes/data.json
+.obsidian/plugins/calendar/data.json
+.obsidian/plugins/obsidian-minimal-settings/data.json
+
+# Gemini Bin
+=1_Bin/
+
+# Python-specific
+__pycache__/
+*.py[cod]
+*$py.class
+0_Config/**/__pycache__/
+
+# Backups and temp files
+*.bak
+*.tmp
+relevant_rag_files.txt
+consolidated_rag_context.md
+integration_output_*.json
+conflict_resolution_output_*.json
+preliminary_synthesis_*.md
+chunk_*.md
+prelim_chunk_*.md
+preliminary_combined_*.md
+create_integration_json.py
+0_Config/PROJECT_VARIABLE.md

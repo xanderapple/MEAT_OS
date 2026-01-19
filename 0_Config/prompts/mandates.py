@@ -1,0 +1,39 @@
+# SHARED MANDATES FOR SYNTHESIS & INTEGRATION
+# This file serves as the Single Source of Truth for all sub-agent prompts.
+
+HIGH_FIDELITY_MANDATE = """### THE HIGH-FIDELITY MANDATE (CRITICAL - DO NOT SUMMARIZE)
+*   **Zero-Summary Mode:** For high-density or "precious" chats, you MUST NOT collapse information. If the user provides 10 technical specs, you extract 10 technical specs. If the user uses 5 metaphors, you capture 5 metaphors.
+*   **Volume Scaling:** The length of your extraction should scale with the volume of the input. Do NOT try to fit a massive log into a standard-length bulleted list.
+*   **Preserve Connectivity:** Capture how ideas link together (e.g., "Basement as Motherboard" leads to "Surface as UI")."""
+
+VOICE_MANDATE = """### PART 1: THE RETRIEVAL & NUANCE MANDATE
+*   **Primary Goal:** Record the user's understanding of themselves and the world for future retrieval. Clarity and accuracy are paramount.
+*   **Assistant-Speak:** ALLOWED. You may use structural terms (Mechanism, Principle, Context) if they help organize the information efficiently for retrieval.
+*   **The Nuance Mandate (CRITICAL):** While general structure can be clinical, you must STRICTLY PRESERVE the user's **unique definitions** and **emotional intensity**.
+    *   **Unconventional Definitions:** If the user defines a term differently than the dictionary (e.g., "A Shortcut means a path with zero hurdles; if it feels like a chore, it's not a shortcut"), you MUST keep that specific logic. Tag these insights with `#value/` or `#preference/`.
+    *   **Emotional Context:** Do not sanitize strong emotions into clinical reports (e.g., instead of "The user expressed frustration," keep "It feels like a hurdle").
+*   **First Person Mandate (CRITICAL):** You MUST write Stream A using the first person ("I"). This is my second brain; it should read like my own inner record of knowledge.
+*   **Context Re-Injection (CRITICAL):** You MUST replace vague pronouns ("this", "it", "that") with the specific noun they refer to, ensuring every bullet point stands alone as a complete thought. (e.g., "I hate it" -> "I hate the lock screen toggle")."""
+
+LANGUAGE_MANDATE = """### PART 1.5: THE LANGUAGE MANDATE (CHINESE INPUT)
+*   **Preserve Original Language:** If the user speaks/writes in Chinese, Stream A (User Insights) **MUST** be written in **Chinese** to capture the nuance. Do NOT translate the user's voice into English.
+*   **Stream B (Literature):** Can be in English or Chinese, depending on the most appropriate context, but generally defaults to the language of the input or standard English for technical definitions if clearer."""
+
+TAGGING_MANDATE = """#### THE 5-DIMENSION TAGGING MANDATE (CRITICAL)
+For every insight in Stream A, you MUST classify it into one or more of these 5 dimensions if applicable, applying the specific Tagging pattern:
+
+1.  **VALUE** (Abstract Principles/Ideals): `#value/<concept>` (e.g., `#value/efficiency`).
+2.  **PREFERENCE** (Specific Likes/Dislikes): `#preference/<specifics>` (e.g., `#preference/cli-workflow`).
+3.  **NEED** (Requirements/Deficits): `#need/<requirement>` (e.g., `#need/low-latency`).
+4.  **ACTION** (Intents/Next Steps): `#action/<verb>` (e.g., `#action/refactor`).
+5.  **EXPERIENCE** (The Context/Event): `#log/<category>` (e.g., `#log/somatic`)."""
+
+INPUT_PROCESSING_MANDATE = """### PART 2: INPUT PROCESSING & AFFIRMATION RIGOR
+Before synthesizing, you must interpret the input using these strict rules:
+
+1.  **Noise Filtering (UI Exclusion - CRITICAL):** You MUST identify and ignore all content that appears to be part of a User Interface (UI), navigation sidebar, chat list, or menu. This includes lists of previous chat titles, "New Chat" buttons, profile settings, and header/footer navigation. Focus EXCLUSIVELY on the active conversation or core text body provided.
+2.  **Request Interpretation & Input Extraction (The "ME" Stream):**
+    *   **Prioritize Your Wording in Chat History (with Inference):** If the input appears to be a chat history, you will first attempt to infer speaker turns based on contextual and stylistic cues (e.g., casualness, use of markdown, capitalization patterns, length of turns). Your primary goal is to extract and prioritize the User's presumed contributions *using their original wording*.
+    *   **Affirmed AI Content in Chat History:** For such inferred chat histories, you will include content from the AI's presumed turns ONLY if the user's subsequent presumed messages explicitly affirm, refer to, or build upon that specific AI content. Use clear textual markers (e.g., "User: Yes, that point about X is correct," or "User: Regarding your idea Y...") to identify such affirmations.
+    *   **General Delimitation for Ambiguous/Mixed Inputs:** If speaker turns cannot be reliably inferred, only the clearly identifiable direct user wording will be prioritized as "user language" for initial interpretation.
+2.  **Bias Exclusion (Clean Start):** This synthesis must rely EXCLUSIVELY on the provided input. You MUST flush your working memory of the current conversation's history and previous turn topics."""
