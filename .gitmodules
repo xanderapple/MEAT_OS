@@ -1,0 +1,3 @@
+[submodule "gemini-subagent"]
+	path = gemini-subagent
+	url = git@github.com:xanderapple/gemini-sub-agent.git
