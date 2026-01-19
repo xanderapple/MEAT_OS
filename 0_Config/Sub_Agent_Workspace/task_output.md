@@ -1,1 +1,0 @@
-Sub-agentic System, RAG synthesis, Visual Reconstruction via LLM, Desktop App, CLI, UI/UX, Hardware Repair, Study Strategy, Environmental Restoration, Git-Backup Habit, Veo, AI Agent Computing, Digital Janitor, PKM, Automation, Technical Momentum
