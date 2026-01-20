@@ -15,7 +15,10 @@ PROTECTED_FILES = [
     "action_log.md",
     "GEMINI_INDEX.md",
     "Preference_Index.md",
-    "GEMINI.md"
+    "GEMINI.md",
+    "notion_commands.py",
+    "notion_api.py",
+    "NOTION.md"
 ]
 
 PROTECTED_DIRS = [
