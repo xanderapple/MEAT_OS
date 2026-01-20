@@ -21,7 +21,7 @@ except ImportError:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python call_agent_task.py "<Prompt Text or File Path>"")
+        print('Usage: python call_agent_task.py "<Prompt Text or File Path>"')
         sys.exit(1)
     
     input_val = sys.argv[1]
