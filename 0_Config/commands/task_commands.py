@@ -62,7 +62,7 @@ def add_task_parser(subparsers):
 def _get_files_to_scan() -> List[str]:
     """Helper function to determine all relevant files for task scanning."""
     files = ["GEMINI.md"]
-    dirs_to_scan = ["4_Sub_Projects", "5_Sub_Projects"]
+    dirs_to_scan = ["5_Tasks"]
     for sub_projects_dir in dirs_to_scan:
         if os.path.exists(sub_projects_dir):
             for entry in os.listdir(sub_projects_dir):

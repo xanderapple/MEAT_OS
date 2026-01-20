@@ -7,7 +7,7 @@ def _run_single_final_synthesis(prelim_path, rag_path):
     """
     Runs the Sub-Agent to generate the Final Note.
     """
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     os.makedirs(workspace_dir, exist_ok=True)
     
     # Filenames in workspace
@@ -46,7 +46,7 @@ def _run_single_final_synthesis(prelim_path, rag_path):
     return None
 
 def _run_final_critique(draft_path):
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     
     draft_file = "final_draft.md" # It's already there
     report_file = "critique_report.md"
@@ -69,7 +69,7 @@ def _run_final_critique(draft_path):
     return None
 
 def _run_final_refinement(draft_path, report_path):
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     
     draft_file = "final_draft.md"
     report_file = "critique_report.md"
@@ -97,7 +97,7 @@ def extract_keywords_agent(file_path):
     """
     Runs a sub-agent task to extract keywords from a file.
     """
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     os.makedirs(workspace_dir, exist_ok=True)
     
     content_file = "keyword_source.md"

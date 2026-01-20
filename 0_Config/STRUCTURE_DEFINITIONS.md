@@ -15,7 +15,7 @@ This document serves as the authoritative, machine-readable reference for the st
     *   **Purpose:** Home for atomic concepts and the historical record of intellectual events (`SYNTH-` notes).
 5.  **`4_Map_of_Content/` (Navigation)**:
     *   **Purpose:** High-level thematic and narrative maps (MOCs).
-6.  **`4_Sub_Projects/` (Task Contexts)**:
+6.  **`5_Tasks/` (Task Contexts)**:
     *   **Purpose:** Dedicated context files for formal Tasks. The concept of "Sub-Projects" is abolished.
 
 ## II. File Naming Conventions

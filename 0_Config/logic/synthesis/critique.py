@@ -7,7 +7,7 @@ def _run_critique(source_input, draft_input):
     """
     Helper function to run a critique task via the Sub-Agent.
     """
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     os.makedirs(workspace_dir, exist_ok=True)
     
     context_source_file = "context_source.md"

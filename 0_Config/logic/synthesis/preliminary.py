@@ -9,7 +9,7 @@ def _run_single_preliminary_synthesis(source_input):
     """
     Helper function to run a single preliminary synthesis task via the Sub-Agent.
     """
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     os.makedirs(workspace_dir, exist_ok=True)
     
     context_source_file = "context_source.md"

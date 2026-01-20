@@ -22,7 +22,7 @@ def create_task_context_file(project_name: str, task_uuid: Optional[str] = None)
     Creates a new Task Context File with a standard template, incorporating a UUID.
     Returns its relative path and the UUID.
     """
-    sub_projects_dir = "4_Sub_Projects"
+    sub_projects_dir = "5_Tasks"
     os.makedirs(sub_projects_dir, exist_ok=True)
 
     if task_uuid is None:
@@ -87,7 +87,7 @@ def archive_project(project_name: str):
     """
     Archives a completed Task Context File.
     """
-    sub_projects_dir = "4_Sub_Projects"
+    sub_projects_dir = "5_Tasks"
     archive_dir = os.path.join(sub_projects_dir, "archive")
     os.makedirs(archive_dir, exist_ok=True)
 
@@ -106,7 +106,7 @@ def archive_project(project_name: str):
 
     # Use task remove CLI command to remove project from GEMINI.md
     print(f"Removing task '{project_name}' from Persistent To-Do List in GEMINI.md...")
-    project_task_name_in_gemini = f"{project_name} (@4_Sub_Projects/{project_name}.md)" # Construct the full name here for consistency
+    project_task_name_in_gemini = f"{project_name} (@5_Tasks/{project_name}.md)" # Construct the full name here for consistency
     success, msg = _execute_task_command(["remove", project_task_name_in_gemini, "--file", "GEMINI.md"]) # MODIFIED LINE
     if success:
         print(f"Successfully removed: {msg}")
@@ -128,7 +128,7 @@ def set_project_status(project_name: str, status: str):
     and triggers a task sync.
     """
     # Construct the full task name as it appears in GEMINI.md for projects
-    full_project_task_name = f"{project_name} (@4_Sub_Projects/{project_name}.md)" 
+    full_project_task_name = f"{project_name} (@5_Tasks/{project_name}.md)" 
     
     print(f"Setting status of task '{project_name}' to '{status}' in GEMINI.md...")
     success, msg = _execute_task_command(["set-status", full_project_task_name, "--file", "GEMINI.md", "--status", status])

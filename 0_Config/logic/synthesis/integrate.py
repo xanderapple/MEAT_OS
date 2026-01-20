@@ -4,7 +4,7 @@ from ...prompts import integrate_prompts
 from ...scripts.call_agent_task import call_sub_agent
 
 def _run_integrate_gen(rag_path, source_path, content_path, tags):
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     os.makedirs(workspace_dir, exist_ok=True)
     
     rag_file = "rag_context.md"
@@ -48,7 +48,7 @@ def _run_integrate_gen(rag_path, source_path, content_path, tags):
     return None
 
 def _run_integrate_critique(json_path):
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     json_file = "integration_plan.json"
     report_file = "critique_report.md"
     task_prompt_file = "task_prompt.md"
@@ -70,7 +70,7 @@ def _run_integrate_critique(json_path):
     return None
 
 def _run_integrate_refine(json_path, report_path):
-    workspace_dir = os.path.join("0_Config", "Sub_Agent_Workspace")
+    workspace_dir = os.path.join("gemini_subagent", "workspace")
     json_file = "integration_plan.json"
     report_file = "critique_report.md"
     output_file = "integration_plan_refined.json"
