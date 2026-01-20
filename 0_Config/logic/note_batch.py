@@ -97,7 +97,7 @@ def execute_integration_plan(processed_json_file: str, source_note_path: str = N
     success_moc, message_moc = execute_script(sys.executable, ["0_Config/main_cli.py", "rag", "update-moc"])
     if success_moc:
         integration_messages.append(message_moc)
-        files_to_add_to_git.append("0_Config/GEMINI_INDEX.md")
+        files_to_add_to_git.append("0_Config/Context/GEMINI_INDEX.md")
     else:
         integration_messages.append(f"Failed to update MOC: {message_moc}")
 

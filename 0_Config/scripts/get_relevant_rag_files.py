@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # Read the content of Gemini_Index_MOC.md
     # Assuming moc_file_path is always relative to vault_root (os.getcwd())
-    moc_file_path = "0_Config/GEMINI_INDEX.md" 
+    moc_file_path = "0_Config/Context/GEMINI_INDEX.md" 
     vault_root = os.getcwd() 
     try:
         with open(os.path.join(vault_root, moc_file_path), 'r', encoding='utf-8') as f:

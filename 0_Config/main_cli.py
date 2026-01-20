@@ -34,7 +34,7 @@ from .utils.config_parsers import parse_project_context
 
 if __name__ == "__main__":
     # Load project variables
-    project_variable_path = "0_Config/PROJECT_VARIABLE.md"
+    project_variable_path = "0_Config/Context/PROJECT_VARIABLE.md"
     project_variables = parse_project_context(project_variable_path)
 
     parser = argparse.ArgumentParser(description="Gemini CLI for Obsidian PKM automation.")

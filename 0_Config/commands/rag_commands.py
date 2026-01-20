@@ -61,7 +61,7 @@ def handle_rag_commands(args):
     
     elif args.rag_command == "update-moc":
         vault_root = os.getcwd() 
-        output_moc_path = "0_Config/GEMINI_INDEX.md" 
+        output_moc_path = "0_Config/Context/GEMINI_INDEX.md" 
         update_gemini_index_moc(vault_root=vault_root, output_moc_path=output_moc_path)
         return True, "Updated Gemini Index MOC."
     
@@ -70,7 +70,7 @@ def handle_rag_commands(args):
         output_path = args.output
         
         # 1. Call rag update-moc
-        update_gemini_index_moc(vault_root=os.getcwd(), output_moc_path="0_Config/GEMINI_INDEX.md")
+        update_gemini_index_moc(vault_root=os.getcwd(), output_moc_path="0_Config/Context/GEMINI_INDEX.md")
 
         if args.keywords:
             # Keywords provided, skip Agent extraction and proceed to generate-relevant-files and consolidate-context

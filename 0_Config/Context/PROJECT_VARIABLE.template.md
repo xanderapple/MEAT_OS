@@ -10,11 +10,11 @@ This file defines project-specific configurations and context for the Gemini CLI
 - **Project Name:** Meat
 - **Vault Root Path:** /path/to/your/vault
 - **Temporary Directory:** /path/to/your/temp/dir
-- **Log File Path:** 0_Config/action_log.md
+- **Log File Path:** 0_Config/Context/action_log.md
 - **Default Output Directory:** output/
 
 ## Paths
-- **Gemini Index MOC Path:** 0_Config/GEMINI_INDEX.md
+- **Gemini Index MOC Path:** 0_Config/Context/GEMINI_INDEX.md
 
 ## Active Workflows
 - **Current Synthesis Workflow:** RAG Synthesis

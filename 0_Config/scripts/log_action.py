@@ -6,7 +6,7 @@ from datetime import datetime
 
 def log_action(log_message):
     gemini_md_path = "GEMINI.md" # Assuming this script is run from the project root or similar
-    action_log_path = "0_Config/action_log.md" # Path to the continuous action log file
+    action_log_path = "0_Config/Context/action_log.md" # Path to the continuous action log file
     archive_dir = "0_Config/logs_archive"
     MAX_LOG_LINES = 300
 
@@ -56,7 +56,7 @@ def log_action(log_message):
         gemini_update_error = True
 
 
-    # --- Log Rotation & Append to 0_Config/action_log.md ---
+    # --- Log Rotation & Append to 0_Config/Context/action_log.md ---
     action_log_updated = False
     archived_message = ""
     

@@ -40,7 +40,7 @@ For any request that involves multi-step planning, state management, or file mod
     *   **Refined Usage for Internal Documentation:** Minor clarifications, typo fixes, or small adjustments to my internal workflow documentation (e.g., `WORKFLOW.md`, `CLI_TOOLS.md`) that do not alter the fundamental strategic or architectural direction of the project **MUST NOT** be logged via `0_Config/scripts/log_action.py`. These smaller changes are sufficiently tracked by `git commit`.
     *   **Distinction from `git commit`:** While `git commit` is used for versioning **code-level changes** with messages focused on technical modifications, this action log focuses on the broader *project context and decisions*. Do not use this for granular code modifications that are better suited for `git commit` messages.
     *   **Tool Usage:** I **MUST ALWAYS** use the `python 0_Config/main_cli.py log "<message>"` tool to log these significant events.
-    *   **Log Destinations:** `GEMINI.md` (Action History) and `0_Config/action_log.md` (Master Log).
+    *   **Log Destinations:** `GEMINI.md` (Action History) and `0_Config/Context/action_log.md` (Master Log).
     *   **Logging Trigger:**
         *   **Automatic:** `task` CLI commands (e.g., creating a new Task Context File).
         *   **Explicit:** Completion of logical steps or strategic decisions.
@@ -73,7 +73,7 @@ To ensure the integrity of work and facilitate recovery from unforeseen issues, 
 To align agent behavior with user preferences and continuously improve interactions:
 
 1.  **Consult `Preference_Index_MOC.md`:**
-    *   **Directive:** When making decisions that could be influenced by user preferences (e.g., coding style, preferred tools, output formats, level of verbosity), I **MUST** actively consult the `0_Config/Preference_Index_MOC.md` file.
+    *   **Directive:** When making decisions that could be influenced by user preferences (e.g., coding style, preferred tools, output formats, level of verbosity), I **MUST** actively consult the `0_Config/Context/Preference_Index.md` file.
     *   **Purpose:** This ensures that my actions and outputs are tailored to the user's explicit configurations, providing a more personalized and efficient experience. Any relevant preference found in this MOC should guide my approach.
 
 #### Task Relevancy & Efficiency Metrics

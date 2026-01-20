@@ -133,7 +133,7 @@ def process_chat_file(file_path: str, api_key: str = None):
 
         # --- Load User Preferences ---
         preferences_dir = "2_Literature_Notes/Personal/Preferences/"
-        preference_moc_path = "3_Map_of_Content/Preference_Index_MOC.md"
+        preference_moc_path = "0_Config/Context/Preference_Index.md"
         loaded_preferences = load_user_preferences(preferences_dir, preference_moc_path)
         
         # Format preferences for LLM prompt

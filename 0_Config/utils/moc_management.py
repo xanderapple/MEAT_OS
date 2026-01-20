@@ -221,7 +221,7 @@ def generate_moc_markdown(markdown_files: list[tuple[str, dict]]) -> str:
     return "\n".join(line for line in markdown_output_lines if line.strip() != "")
 
 
-def update_gemini_index_moc(vault_root: str, output_moc_path: str = "0_Config/GEMINI_INDEX.md") -> None:
+def update_gemini_index_moc(vault_root: str, output_moc_path: str = "0_Config/Context/GEMINI_INDEX.md") -> None:
     """
     Orchestrates the process of updating the Gemini_Index_MOC.md file.
     Lists all Markdown files with metadata, generates the hierarchical Markdown content,
@@ -246,7 +246,7 @@ def update_gemini_index_moc(vault_root: str, output_moc_path: str = "0_Config/GE
     except Exception as e:
         print(f"Error writing to {output_moc_path}: {e}")
 
-def update_preference_index_moc(vault_root: str, preferences_dir: str = "3_Permanent_Notes/Personal/Preferences/", output_moc_path: str = "4_Map_of_Content/Preference_Index_MOC.md") -> None:
+def update_preference_index_moc(vault_root: str, preferences_dir: str = "3_Permanent_Notes/Personal/Preferences/", output_moc_path: str = "0_Config/Context/Preference_Index.md") -> None:
     """
     Updates the Preference_Index_MOC.md file by dynamically generating a table
     of preferences from individual preference notes.

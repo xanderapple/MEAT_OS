@@ -47,7 +47,7 @@ The `task` command provides a robust interface for managing tasks directly withi
 The `save` command allows explicit management of session context for seamless handoffs.
 
 -   `save handoff "<summary_content>"`: Writes a concise summary of the current session's context, decisions, and immediate next steps to the `### Session Handoff` section in `GEMINI.md`. This is critical for preserving immediate conversational state across agent instantiations.
--   `log "<message>"`: Records high-level project decisions to `GEMINI.md` and `0_Config/action_log.md`.
+-   `log "<message>"`: Records high-level project decisions to `GEMINI.md` and `0_Config/Context/action_log.md`.
 
 
 ### Project Logging and Version Control
@@ -77,7 +77,7 @@ The `0_Config/PROJECT_VARIABLE.md` file serves as the **centralized, machine-rea
     *   `Project Name`, `Vault Root Path`, `Temporary Directory`, `Log File Path`, `Default Output Directory`.
     *   `Current Synthesis Workflow`, `Active RAG Profile`.
     *   `LLM Model Name`, `Max Tokens` for AI agent settings.
-*   **Idempotent Creation:** This file, along with `0_Config/Preference_Index_MOC.md`, is created with a default structure if it doesn't already exist. It is a one-time creation and will not be overwritten.
+*   **Idempotent Creation:** This file, along with `0_Config/Context/Preference_Index.md`, is created with a default structure if it doesn't already exist. It is a one-time creation and will not be overwritten.
 - **Dynamic Influence:** The **Project Variables** derived from this file directly influence the execution of various CLI commands and automated workflows, enabling flexible and consistent operation across your project.
 
 ### Ollama Integration
@@ -101,8 +101,8 @@ The `4_Map_of_Content` directory reveals a highly sophisticated, multi-layered s
 - **Manual Curation (Thematic/Narrative MOCs):** Human-crafted MOCs (e.g., `4_Map_of_Content/Origin_of_Life_and_Civilization_MOC.md`, `Personal_Philosophy/Foundational Axioms.md`) that structure complex topics, build narratives, and demonstrate deep conceptual linking. These vary from skeletal outlines to richly detailed explorations.
 3.  **Automated Indexing (Dynamic Dashboards via Dataview):** MOCs (e.g., `Goals_MOC.md`, `Synthesis_MOCs.md`, log-specific MOCs) leveraging the 'Dataview' Obsidian plugin to create dynamic, self-updating dashboards based on tags, metadata, or file paths. `Synthesis_MOCs.md` notably indexes output from the synthesis process.
 4.  **Programmatic Integration (Critical for AI):**
-`0_Config/Preference_Index_MOC.md`: Acts as an **active configuration file for the Gemini CLI (me!)**, explicitly guiding the synthesis process and utilizing stable, relative-path links for programmatic interaction.
-    - `0_Config/GEMINI_INDEX.md`: A comprehensive, machine-readable sitemap of the entire vault, specifically designed for AI agent reference, linking to nearly every note for rapid, programmatic content discovery.
+`0_Config/Context/Preference_Index.md`: Acts as an **active configuration file for the Gemini CLI (me!)**, explicitly guiding the synthesis process and utilizing stable, relative-path links for programmatic interaction.
+    - `0_Config/Context/GEMINI_INDEX.md`: A comprehensive, machine-readable sitemap of the entire vault, specifically designed for AI agent reference, linking to nearly every note for rapid, programmatic content discovery.
 
 **MOC Layer Functionality for AI:** This layered approach provides:
 
@@ -114,11 +114,11 @@ The `4_Map_of_Content` directory reveals a highly sophisticated, multi-layered s
 
 ### RAG and MOC Management CLI
 
-To streamline the Retrieval-Augmented Generation (RAG) process and ensure the accuracy of the `0_Config/GEMINI_INDEX.md`, the `rag` command provides several subcommands:
+To streamline the Retrieval-Augmented Generation (RAG) process and ensure the accuracy of the `0_Config/Context/GEMINI_INDEX.md`, the `rag` command provides several subcommands:
 
 -   `rag generate-relevant-files [--keywords <keyword1,keyword2,...>]`: Generates relevant RAG file paths based on keywords and writes them to `relevant_rag_files.txt`.
 -   `rag consolidate-context [--output <path>]`: Consolidates first sections of files from `relevant_rag_files.txt`. Defaults to `stdout` for direct prompt injection.
--   `rag update-moc`: Scans the entire vault and regenerates the `0_Config/GEMINI_INDEX.md` sitemap for AI reference.
+-   `rag update-moc`: Scans the entire vault and regenerates the `0_Config/Context/GEMINI_INDEX.md` sitemap for AI reference.
 -   `rag prepare-context [<source>] [--keywords <keywords>] [--output <path>]`: **Universal RAG Engine.** Orchestrates the full pipeline (Update MOC -> Search -> Consolidate). 
     -   If `<source>` (file or raw text) is provided without keywords, it prompts the Agent to extract keywords.
     -   If `--keywords` are provided, it outputs consolidated context to `stdout` or a file.
@@ -161,8 +161,8 @@ To facilitate precise knowledge integration and manipulation within the permanen
 These are standalone scripts or utility functions used for project maintenance.
 
 -   **`python 0_Config/main_cli.py log "<action_description>"`**: Manually logs a significant project event.
-    *   **Description:** Records a high-level strategic decision or workflow change to both `0_Config/action_log.md` and the `### Action History` section of `GEMINI.md`. This is separate from technical `git commit` messages.
+    *   **Description:** Records a high-level strategic decision or workflow change to both `0_Config/Context/action_log.md` and the `### Action History` section of `GEMINI.md`. This is separate from technical `git commit` messages.
 
 ### MOC Maintenance (Context for Future Planning)
 
-While not yet formalized as a plan, an MOC maintenance strategy is crucial. This would involve regularly reviewing and updating MOCs to ensure they remain accurate, prevent staleness, and align with the evolving content and conceptual structure of the vault. This is particularly important for the AI-critical MOCs (`0_Config/Preference_Index_MOC.md`, `0_Config/GEMINI_INDEX.md`) to ensure their continued accuracy and effectiveness for automated processes.
+While not yet formalized as a plan, an MOC maintenance strategy is crucial. This would involve regularly reviewing and updating MOCs to ensure they remain accurate, prevent staleness, and align with the evolving content and conceptual structure of the vault. This is particularly important for the AI-critical MOCs (`0_Config/Context/Preference_Index.md`, `0_Config/Context/GEMINI_INDEX.md`) to ensure their continued accuracy and effectiveness for automated processes.

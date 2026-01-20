@@ -7,7 +7,7 @@ from datetime import datetime
 
 def log_action(log_message):
     gemini_md_path = "GEMINI.md" 
-    action_log_path = "0_Config/action_log.md" 
+    action_log_path = "0_Config/Context/action_log.md" 
     archive_dir = "0_Config/logs_archive"
     MAX_LOG_LINES = 300
 
@@ -46,7 +46,7 @@ def log_action(log_message):
         return False, f"Error writing to {gemini_md_path}: {e}"
 
 
-    # --- Log Rotation & Append to 0_Config/action_log.md ---
+    # --- Log Rotation & Append to 0_Config/Context/action_log.md ---
     action_log_updated = False
     archived_message = ""
     

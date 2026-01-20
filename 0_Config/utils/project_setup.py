@@ -8,7 +8,7 @@ def initialize_project(vault_root: str) -> None:
         vault_root: The root directory of the Obsidian vault (project root).
     """
     project_variable_path = os.path.join(vault_root, "0_Config/PROJECT_VARIABLE.md")
-    preference_moc_path = os.path.join(vault_root, "3_Map_of_Content/Preference_Index_MOC.md")
+    preference_moc_path = os.path.join(vault_root, "0_Config/Context/Preference_Index.md")
 
     # Ensure 0_Config directory exists
     os.makedirs(os.path.dirname(project_variable_path), exist_ok=True)
@@ -30,7 +30,7 @@ This file defines project-specific configurations and context for the Gemini CLI
 - **Project Name:** Meat
 - **Vault Root Path:** C:\\XANAX\\Meat
 - **Temporary Directory:** C:\\Users\\dell\\.gemini\\tmp\\
-- **Log File Path:** 0_Config/action_log.md
+- **Log File Path:** 0_Config/Context/action_log.md
 - **Default Output Directory:** output/
 
 ## Active Workflows
