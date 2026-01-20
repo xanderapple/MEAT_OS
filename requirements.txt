@@ -1,0 +1,5 @@
+# Core Dependencies
+PyYAML
+requests
+argparse
+# Add other dependencies as they are identified
