@@ -60,6 +60,7 @@ def add_synthesis_parser(subparsers):
     init_parser = synthesis_subparsers.add_parser("init", help="Executes the full synthesis workflow from input to knowledge integration.")
     init_parser.add_argument("--source", required=True, help="Path to input file or direct content for the full synthesis workflow.")
     init_parser.add_argument("--input-mode", choices=['direct', 'reference'], default='direct', help="How to handle the source input.")
+    init_parser.add_argument("--resume-from", help="Optional: Path to an existing preliminary synthesis file to skip Step 1.")
 
     # cleanup command
     cleanup_parser = synthesis_subparsers.add_parser("cleanup", help="Deletes temporary synthesis artifacts (preliminary files, consolidated context, integration plans).")
@@ -207,7 +208,7 @@ FINAL STEP: Run `synthesis cleanup`."""
             return False, f"Integration Plan Generation Failed: {json_path}"
 
     elif args.synthesis_command == "init":
-        success, msg = run_init_workflow(args.source, args.input_mode)
+        success, msg = run_init_workflow(args.source, args.input_mode, args.resume_from)
         return success, msg
 
     elif args.synthesis_command == "cleanup":
@@ -221,6 +222,10 @@ FINAL STEP: Run `synthesis cleanup`."""
             os.path.join(temp_dir, "conflict_resolution_output_*.json"),
             os.path.join(temp_dir, "relevant_rag_files.txt"),
             os.path.join(temp_dir, "critique_report_*.md"),
+            "preliminary_synthesis_*.md",
+            "final_synthesis_*.md",
+            "preliminary_combined_*.md",
+            "critique_report_*.md",
             "consolidated_rag_context.md",
             "create_integration_json.py",
             "relevant_rag_files.txt"

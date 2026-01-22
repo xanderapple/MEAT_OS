@@ -36,7 +36,7 @@ def _run_single_preliminary_synthesis(source_input):
         f.write(content_to_stage)
 
     # Generate Prompt
-    agent_instruction = preliminary_prompts.get_preliminary_prompt(context_source_file, task_output_file)
+    agent_instruction = preliminary_prompts.get_preliminary_prompt(context_source_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(agent_instruction)
 
@@ -115,66 +115,71 @@ def run_preliminary_workflow(source_input):
         for i, chunk_path in enumerate(chunk_paths):
             print(f"Processing Chunk {i+1}/{len(chunk_paths)}...")
             result_path = _run_single_preliminary_synthesis(chunk_path)
-            if result_path:
-                output_paths.append(result_path)
-            else:
+            
+            if not result_path:
                 return False, f"Failed to process chunk {i+1}."
 
+            # --- PER-CHUNK AUDIT & REFINE ---
+            MAX_RETRIES = 1
+            current_chunk_draft = result_path
+            
+            for attempt in range(1, MAX_RETRIES + 1):
+                print(f"[Status] Chunk {i+1} - Attempt {attempt}/{MAX_RETRIES}: Running Critique...")
+                critique_path = _run_critique(chunk_path, current_chunk_draft)
+                
+                if not critique_path:
+                    print(f"[Error] Chunk {i+1} critique failed. Proceeding.")
+                    break
+                
+                with open(critique_path, 'r', encoding='utf-8') as f:
+                    if "VERDICT: PASS" in f.read():
+                        print(f"[Success] ✅ Chunk {i+1} Verified.")
+                        break
+                    else:
+                        print(f"[Status] ❌ Chunk {i+1} FAIL. Refining...")
+                        refined_path = _run_refinement(chunk_path, current_chunk_draft, critique_path)
+                        if refined_path:
+                            current_chunk_draft = refined_path
+                        else:
+                            break
+            
+            output_paths.append(current_chunk_draft)
+
         # 3. Combine
-        print("Combining chunks...")
+        print("Combining verified chunks...")
         final_draft_path = _combine_synthesis_files(output_paths)
-        print(f"Multi-Chunk Synthesis Complete. Initial Output: {final_draft_path}")
+        print(f"Multi-Chunk Synthesis Complete. Output: {final_draft_path}")
+        return True, f"Workflow Complete (Chunked).\nFinal Draft: {final_draft_path}"
 
     else:
         # Standard Single File
         result_path = _run_single_preliminary_synthesis(source_input)
-        if result_path:
-            final_draft_path = result_path
-            print(f"Preliminary Synthesis Complete. Initial Output: {final_draft_path}")
-        else:
+        if not result_path:
             return False, "Synthesis failed."
-
-    # --- PHASE 2: AUDIT & REFINE LOOP ---
-    MAX_RETRIES = 3
-    current_draft = final_draft_path
-    
-    print("\n--- Starting Audit & Refine Loop ---")
-    
-    for attempt in range(1, MAX_RETRIES + 1):
-        print(f"\n[Status] Attempt {attempt}/{MAX_RETRIES}: Running Critique on current draft...")
-        critique_path = _run_critique(source_input, current_draft)
         
-        if not critique_path:
-            print("[Error] Critique generation failed. Stopping loop.")
-            break
+        # --- SINGLE FILE AUDIT & REFINE ---
+        MAX_RETRIES = 1
+        current_draft = result_path
+        
+        for attempt in range(1, MAX_RETRIES + 1):
+            print(f"[Status] Single File - Attempt {attempt}/{MAX_RETRIES}: Running Critique...")
+            critique_path = _run_critique(source_input, current_draft)
             
-        print(f"[Status] Critique Report Generated: {critique_path}")
-        
-        # Parse Verdict
-        verdict_pass = False
-        try:
+            if not critique_path: break
+            
             with open(critique_path, 'r', encoding='utf-8') as f:
-                report_content = f.read()
-                if "VERDICT: PASS" in report_content:
-                    verdict_pass = True
-        except Exception as e:
-            print(f"[Error] reading report: {e}")
+                if "VERDICT: PASS" in f.read():
+                    print(f"[Success] ✅ Draft Verified.")
+                    break
+                else:
+                    print(f"[Status] ❌ Draft FAIL. Refining...")
+                    refined_path = _run_refinement(source_input, current_draft, critique_path)
+                    if refined_path: current_draft = refined_path
+                    else: break
         
-        if verdict_pass:
-            print(f"[Success] ✅ VERDICT: PASS. Draft validated.")
-            return True, f"Workflow Complete (Verified).\nFinal Draft: {current_draft}\nReport: {critique_path}"
-        else:
-            print(f"[Status] ❌ VERDICT: FAIL. Initiating Refinement...")
-            refined_path = _run_refinement(source_input, current_draft, critique_path)
-            
-            if refined_path:
-                print(f"[Success] Refinement Successful. New Draft: {refined_path}")
-                current_draft = refined_path
-            else:
-                print("[Error] Refinement failed. Stopping loop.")
-                break
-    
-    return True, f"Workflow Ended (Max Retries Reached or Error).\nLast Draft: {current_draft}\nLast Report: {critique_path}"
+        final_draft_path = current_draft
+        print(f"Preliminary Synthesis Complete. Output: {final_draft_path}")
+        return True, f"Workflow Complete.\nFinal Draft: {final_draft_path}"
 
 def run_combine_workflow(files):
     output_path = _combine_synthesis_files(files)

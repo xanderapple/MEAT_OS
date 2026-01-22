@@ -33,7 +33,7 @@ def _run_integrate_gen(rag_path, source_path, content_path, tags):
             f.write(content_path) # Treat as string
 
     # 2. Prompt
-    prompt = integrate_prompts.get_integrate_prompt(rag_file, source_file, input_file, json_file, tags)
+    prompt = integrate_prompts.get_integrate_prompt(rag_file, source_file, input_file, tags)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
 
@@ -47,20 +47,33 @@ def _run_integrate_gen(rag_path, source_path, content_path, tags):
         return abs_json
     return None
 
-def _run_integrate_critique(json_path):
+def _run_integrate_critique(json_path, source_path):
     workspace_dir = os.path.join("gemini_subagent", "workspace")
     json_file = "integration_plan.json"
+    source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
     task_prompt_file = "task_prompt.md"
     
+    abs_json = os.path.join(workspace_dir, json_file)
+    abs_source = os.path.join(workspace_dir, source_file)
     abs_report = os.path.join(workspace_dir, report_file)
     abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
+
+    # 1. Stage
+    if json_path != abs_json:
+        shutil.copy(json_path, abs_json)
+    if source_path and os.path.exists(source_path):
+        shutil.copy(source_path, abs_source)
+    else:
+        with open(abs_source, 'w', encoding='utf-8') as f:
+            f.write("Original source not provided.")
     
-    prompt = integrate_prompts.get_integrate_critique_prompt(json_file, report_file)
+    prompt = integrate_prompts.get_integrate_critique_prompt(json_file, source_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
-        
-    print("Dispatching Integration Critique...")
+
+    # 3. Dispatch
+    print("Dispatching Integration Audit...")
     call_sub_agent("__USE_EXISTING__")
     
     abs_task_output = os.path.join(workspace_dir, "task_output.md")
@@ -69,17 +82,29 @@ def _run_integrate_critique(json_path):
         return abs_report
     return None
 
-def _run_integrate_refine(json_path, report_path):
+def _run_integrate_refine(json_path, report_path, source_path):
     workspace_dir = os.path.join("gemini_subagent", "workspace")
     json_file = "integration_plan.json"
+    source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
     output_file = "integration_plan_refined.json"
     task_prompt_file = "task_prompt.md"
     
+    abs_json = os.path.join(workspace_dir, json_file)
+    abs_source = os.path.join(workspace_dir, source_file)
+    abs_report = os.path.join(workspace_dir, report_file)
     abs_output = os.path.join(workspace_dir, output_file)
     abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
+
+    # 1. Stage
+    if json_path != abs_json:
+        shutil.copy(json_path, abs_json)
+    if report_path != abs_report:
+        shutil.copy(report_path, abs_report)
+    if source_path and os.path.exists(source_path):
+        shutil.copy(source_path, abs_source)
     
-    prompt = integrate_prompts.get_integrate_refinement_prompt(json_file, report_file, output_file)
+    prompt = integrate_prompts.get_integrate_refinement_prompt(json_file, report_file, source_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
         
@@ -99,10 +124,10 @@ def run_integrate_workflow(rag_path, source_path, content_path, tags=""):
     if not current_json:
         return False, "Integration Plan Generation Failed."
         
-    MAX_RETRIES = 2
+    MAX_RETRIES = 1
     for i in range(MAX_RETRIES):
         print(f"\nAudit Attempt {i+1}/{MAX_RETRIES}...")
-        report = _run_integrate_critique(current_json)
+        report = _run_integrate_critique(current_json, source_path)
         if not report: break
         
         with open(report, 'r', encoding='utf-8') as f:
@@ -114,7 +139,7 @@ def run_integrate_workflow(rag_path, source_path, content_path, tags=""):
                 return True, final_path
         
         print("❌ Verification Failed. Refining...")
-        new_json = _run_integrate_refine(current_json, report)
+        new_json = _run_integrate_refine(current_json, report, source_path)
         if new_json: current_json = new_json
         else: break
     

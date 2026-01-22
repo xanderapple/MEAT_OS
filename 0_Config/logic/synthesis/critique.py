@@ -35,7 +35,7 @@ def _run_critique(source_input, draft_input):
         return None
 
     # 3. Generate Prompt
-    agent_instruction = critique_prompts.get_critique_prompt(context_source_file, draft_file, task_output_file)
+    agent_instruction = critique_prompts.get_critique_prompt(context_source_file, draft_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(agent_instruction)
 

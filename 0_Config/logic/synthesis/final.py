@@ -30,7 +30,7 @@ def _run_single_final_synthesis(prelim_path, rag_path):
             f.write("No RAG context provided.")
 
     # 2. Generate Prompt
-    prompt = final_prompts.get_final_prompt(prelim_file, rag_file, draft_file)
+    prompt = final_prompts.get_final_prompt(prelim_file, rag_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
 
@@ -45,17 +45,29 @@ def _run_single_final_synthesis(prelim_path, rag_path):
         return abs_draft 
     return None
 
-def _run_final_critique(draft_path):
+def _run_final_critique(draft_path, source_path):
     workspace_dir = os.path.join("gemini_subagent", "workspace")
     
-    draft_file = "final_draft.md" # It's already there
+    draft_file = "final_draft.md" 
+    source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
     task_prompt_file = "task_prompt.md"
     
+    abs_draft = os.path.join(workspace_dir, draft_file)
+    abs_source = os.path.join(workspace_dir, source_file)
     abs_report = os.path.join(workspace_dir, report_file)
     abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
+
+    # 1. Stage Files
+    if draft_path != abs_draft:
+        shutil.copy(draft_path, abs_draft)
+    if source_path and os.path.exists(source_path):
+        shutil.copy(source_path, abs_source)
+    else:
+        with open(abs_source, 'w', encoding='utf-8') as f:
+            f.write("Original source not provided.")
     
-    prompt = final_prompts.get_final_critique_prompt(draft_file, report_file)
+    prompt = final_prompts.get_final_critique_prompt(draft_file, source_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
         
@@ -68,18 +80,30 @@ def _run_final_critique(draft_path):
         return abs_report
     return None
 
-def _run_final_refinement(draft_path, report_path):
+def _run_final_refinement(draft_path, report_path, source_path):
     workspace_dir = os.path.join("gemini_subagent", "workspace")
     
     draft_file = "final_draft.md"
+    source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
     output_file = "final_draft_refined.md"
     task_prompt_file = "task_prompt.md"
     
+    abs_draft = os.path.join(workspace_dir, draft_file)
+    abs_source = os.path.join(workspace_dir, source_file)
+    abs_report = os.path.join(workspace_dir, report_file)
     abs_output = os.path.join(workspace_dir, output_file)
     abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
+
+    # 1. Stage Files (Crucial for resume or multi-step logic)
+    if draft_path != abs_draft:
+        shutil.copy(draft_path, abs_draft)
+    if report_path != abs_report:
+        shutil.copy(report_path, abs_report)
+    if source_path and os.path.exists(source_path):
+        shutil.copy(source_path, abs_source)
     
-    prompt = final_prompts.get_final_refinement_prompt(draft_file, report_file, output_file)
+    prompt = final_prompts.get_final_refinement_prompt(draft_file, report_file, source_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
         
@@ -88,9 +112,9 @@ def _run_final_refinement(draft_path, report_path):
     
     abs_task_output = os.path.join(workspace_dir, "task_output.md")
     if os.path.exists(abs_task_output):
-        # Move refined to draft for next loop
-        shutil.move(abs_task_output, os.path.join(workspace_dir, draft_file))
-        return os.path.join(workspace_dir, draft_file)
+        # Move refined back to draft_file for the next potential iteration or check
+        shutil.move(abs_task_output, abs_draft)
+        return abs_draft
     return None
 
 def extract_keywords_agent(file_path):
@@ -110,20 +134,21 @@ def extract_keywords_agent(file_path):
     
     shutil.copy(file_path, abs_content)
     
-    prompt = final_prompts.get_keyword_extraction_prompt(content_file, output_file)
+    prompt = final_prompts.get_keyword_extraction_prompt(content_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(prompt)
         
     print("Dispatching Keyword Extraction...")
-    call_sub_agent("__USE_EXISTING__")
+    result_content = call_sub_agent("__USE_EXISTING__")
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        with open(abs_task_output, 'r', encoding='utf-8') as f:
-            return f.read().strip()
+    if result_content:
+        # Sometimes the agent might put extra text, try to find a comma-separated line
+        # or just return the whole thing if it's short.
+        return result_content.strip()
+        
     return None
 
-def run_final_workflow(prelim_path, rag_path):
+def run_final_workflow(prelim_path, rag_path, source_path=None):
     """
     Orchestrates the Final Note generation loop.
     """
@@ -138,10 +163,10 @@ def run_final_workflow(prelim_path, rag_path):
     print(f"[Status] Draft Generated: {current_draft}")
     
     # 2. Loop
-    MAX_RETRIES = 2
+    MAX_RETRIES = 1
     for i in range(MAX_RETRIES):
         print(f"\n[Status] Audit Attempt {i+1}/{MAX_RETRIES}...")
-        report = _run_final_critique(current_draft)
+        report = _run_final_critique(current_draft, source_path)
         
         if not report:
             print("[Error] Critique failed. Proceeding with current draft.")
@@ -160,7 +185,7 @@ def run_final_workflow(prelim_path, rag_path):
                 return True, final_path
         
         print("[Status] ❌ Verification Failed. Refining...")
-        new_draft = _run_final_refinement(current_draft, report)
+        new_draft = _run_final_refinement(current_draft, report, source_path)
         if new_draft:
             print(f"[Success] Refinement Successful: {new_draft}")
             current_draft = new_draft

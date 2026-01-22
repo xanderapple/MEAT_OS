@@ -1,6 +1,6 @@
 from . import mandates
 
-def get_integrate_prompt(rag_context_filename, source_note_filename, input_content_filename, output_filename, suggested_tags=""):
+def get_integrate_prompt(rag_context_filename, source_note_filename, input_content_filename, suggested_tags=""):
     """
     Generates the prompt for the Sub-Agent to generate the Safe Integration JSON.
     """
@@ -10,8 +10,9 @@ You are performing a "Safe Integration" of new information into your PKM vault.
 ### INPUTS
 1. **RAG Context:** `{rag_context_filename}`
 2. **Input Content:** `{input_content_filename}`
+3. **Source Reference:** `{source_note_filename}`
 
-**Action Required:** You MUST use `read_file` to read BOTH files.
+**Action Required:** You MUST use `read_file` to read ALL THREE files.
 
 ### MANDATES (CONTENT)
 
@@ -37,20 +38,17 @@ Types:
 4.  `update_metadata`: {{ "type": "update_metadata", "file": "...", "add_tags": [...], ... }}
 
 **Escape Newlines:** You MUST escape newlines in content strings as `\n`.
-
-**Action Required:**
-1. Generate the JSON content.
-2. Write the RAW JSON to `{output_filename}`.
 """
 
-def get_integrate_critique_prompt(json_filename, output_filename):
+def get_integrate_critique_prompt(json_filename, source_note_filename):
     return f"""
-Audit the Integration JSON Plan.
+Audit the Integration JSON Plan against the original source.
 
-### INPUT
-**JSON Plan:** `{json_filename}`
+### INPUTS
+1. **JSON Plan:** `{json_filename}`
+2. **Original Source:** `{source_note_filename}`
 
-**Action Required:** Read the file.
+**Action Required:** Read BOTH files.
 
 ### AUDIT CRITERIA
 1.  **JSON Syntax:** Is it valid JSON? (Visual check: brackets, commas, escaped newlines).
@@ -71,17 +69,16 @@ Audit the Integration JSON Plan.
 
 ## Feedback
 (Instructions for refinement)
-
-**Action Required:** Write report to `{output_filename}`.
 """
 
-def get_integrate_refinement_prompt(json_filename, feedback_filename, output_filename):
+def get_integrate_refinement_prompt(json_filename, feedback_filename, source_note_filename):
     return f"""
-Refine the Integration JSON based on the critique.
+Refine the Integration JSON based on the critique and the original source.
 
 ### INPUTS
 1. **JSON Draft:** `{json_filename}`
 2. **Critique:** `{feedback_filename}`
+3. **Original Source:** `{source_note_filename}`
 
-**Action Required:** Rewrite the JSON to fix violations. Output to `{output_filename}`.
+**Action Required:** Rewrite the JSON to fix violations while ensuring all insights from the source are captured.
 """

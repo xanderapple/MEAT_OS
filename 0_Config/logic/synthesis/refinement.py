@@ -42,7 +42,7 @@ def _run_refinement(source_input, draft_input, report_input):
         return None
 
     # 2. Generate Prompt
-    agent_instruction = critique_prompts.get_refinement_prompt(context_source_file, draft_file, report_file, task_output_file)
+    agent_instruction = critique_prompts.get_refinement_prompt(context_source_file, draft_file, report_file)
     with open(abs_task_prompt, 'w', encoding='utf-8') as f:
         f.write(agent_instruction)
 

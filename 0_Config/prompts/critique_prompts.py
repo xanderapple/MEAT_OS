@@ -1,6 +1,6 @@
 from . import mandates
 
-def get_critique_prompt(source_filename, draft_filename, output_filename):
+def get_critique_prompt(source_filename, draft_filename):
     """
     Generates a prompt for the Sub-Agent to critique a preliminary synthesis.
     """
@@ -18,7 +18,7 @@ Your task is to perform a strict quality audit of a Preliminary Synthesis draft.
 #### 1. THE HIGH-FIDELITY MANDATE (Completeness)
 *   **Mandate:** "{mandates.HIGH_FIDELITY_MANDATE}"
 *   **Audit Task:** Did the draft collapse or summarize distinct technical details? 
-*   **EVIDENCE REQUIRED:** Identify at least 3 specific details/metaphors from the Source that are missing or overly generalized in the Draft. Quote the Source text vs. the Draft text.
+*   **EVIDENCE REQUIRED:** Identify any significant details/metaphors from the Source that are missing or overly generalized in the Draft. Quote the Source text vs. the Draft text. If the draft is comprehensive, state "High Fidelity Maintained".
 
 #### 2. THE VOICE & NUANCE MANDATE
 *   **Mandate:** "{mandates.VOICE_MANDATE}"
@@ -53,12 +53,10 @@ Your task is to perform a strict quality audit of a Preliminary Synthesis draft.
 ## Feedback for Refinement
 (Provide direct instructions on what to fix if the verdict is FAIL.)
 
-**Action Required:**
-1. Write your report to `{output_filename}`.
-2. Terminate session.
+**Action Required:** Write your report.
 """
 
-def get_refinement_prompt(source_filename, draft_filename, feedback_filename, output_filename):
+def get_refinement_prompt(source_filename, draft_filename, feedback_filename):
     """
     Generates a prompt for the Sub-Agent to refine a draft based on critique.
     """
@@ -74,6 +72,4 @@ You are refining a Preliminary Synthesis draft based on a Critique Report.
 
 ### TASK
 Rewrite the Preliminary Synthesis. You MUST address every violation and piece of feedback listed in the Critique Report while maintaining the original mandates.
-
-**Output to:** `{output_filename}`
 """
