@@ -27,21 +27,30 @@ def run_init_workflow(source_path, input_mode="direct", resume_from=None):
     if resume_from:
         if not os.path.exists(resume_from):
             return False, f"Resume file not found: {resume_from}"
-        print(f"\n>>> RESUMING SYNTHESIS from: {resume_from}")
         
         # Detection logic
         base_resume = os.path.basename(resume_from)
-        if base_resume.startswith("final_synthesis_"):
-            print("[Status] Detected Final Synthesis. Skipping Steps 1-3.")
+        
+        if resume_from == source_path:
+             print(f"\n>>> STARTING SYNTHESIS with archived source: {resume_from}")
+             # Do NOT set prelim_path or final_path, let it run Step 1.
+        elif base_resume.startswith("final_synthesis_") or "final_synthesis" in base_resume:
+            print(f"\n>>> RESUMING SYNTHESIS from Final Note: {resume_from}")
+            print("[Status] Skipping Steps 1-3.")
             final_path = resume_from
             # We still need RAG context for integration, try to find it or create dummy
             if not os.path.exists(rag_output_path):
                 print("Warning: RAG context not found. Creating empty context for integration.")
                 with open(rag_output_path, 'w', encoding='utf-8') as f:
                     f.write("No RAG context available (Resumed from Final).")
-        else:
-            print("[Status] Detected Preliminary Synthesis. Skipping Step 1.")
+        elif base_resume.startswith("preliminary_") or "preliminary" in base_resume:
+            print(f"\n>>> RESUMING SYNTHESIS from Preliminary Note: {resume_from}")
+            print("[Status] Skipping Step 1.")
             prelim_path = resume_from
+        else:
+            # Fallback: If it's not a recognized synthesis note, assume it's just the source
+            print(f"\n>>> STARTING SYNTHESIS (using provided resume-from as source): {resume_from}")
+            final_source_path = resume_from
     else:
         # (Standard Archiving Logic)
         if os.path.exists(source_path):

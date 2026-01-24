@@ -15,9 +15,10 @@ VOICE_MANDATE = """### PART 1: THE RETRIEVAL & NUANCE MANDATE
 *   **First Person Mandate (CRITICAL):** You MUST write Stream A using the first person ("I"). This is my second brain; it should read like my own inner record of knowledge.
 *   **Context Re-Injection (CRITICAL):** You MUST replace vague pronouns ("this", "it", "that") with the specific noun they refer to, ensuring every bullet point stands alone as a complete thought. (e.g., "I hate it" -> "I hate the lock screen toggle")."""
 
-LANGUAGE_MANDATE = """### PART 1.5: THE LANGUAGE MANDATE (CHINESE INPUT)
-*   **Preserve Original Language:** If the user speaks/writes in Chinese, Stream A (User Insights) **MUST** be written in **Chinese** to capture the nuance. Do NOT translate the user's voice into English.
-*   **Stream B (Literature):** Can be in English or Chinese, depending on the most appropriate context, but generally defaults to the language of the input or standard English for technical definitions if clearer."""
+LANGUAGE_MANDATE = """### PART 1.5: THE LANGUAGE MANDATE (MIXED INPUT)
+*   **Mirror Language Usage:** You MUST mirror the user's language usage proportionally. 
+*   **Stream A (User Insights):** If the input is primarily English with specific Chinese phrases, the structural narrative and English insights MUST remain in English. Preserve specific Chinese phrases, idiosyncratic definitions, or emotional outbursts in their original Chinese to capture the nuance. Do NOT force-translate the entire stream into one language if the input was mixed.
+*   **Stream B (Literature):** Defaults to English for technical definitions unless the concepts are uniquely Chinese."""
 
 TAGGING_MANDATE = """#### THE 5-DIMENSION TAGGING MANDATE (CRITICAL)
 For every insight in Stream A, you MUST classify it into one or more of these 5 dimensions if applicable, applying the specific Tagging pattern:

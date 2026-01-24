@@ -1,9 +1,57 @@
 import os
 import json
 import sys
+import re
 from .note_core import create_atomic_note, edit_existing_note
 from .note_metadata import update_note_metadata, propagate_rename
 from ..utils.command_utils import execute_script
+
+def _fix_invalid_json(json_str: str) -> str:
+    """
+    Attempts to fix common sub-agent JSON errors:
+    1. Raw newlines inside string values.
+    2. Unescaped quotes inside string values.
+    """
+    fixed_chars = []
+    in_string = False
+    escaped = False
+    
+    i = 0
+    while i < len(json_str):
+        char = json_str[i]
+        
+        if escaped:
+            fixed_chars.append(char)
+            escaped = False
+        elif char == '\\':
+            fixed_chars.append(char)
+            escaped = True
+        elif char == '"':
+            if in_string:
+                # Potential end of string. Check if it's followed by JSON structure.
+                is_structural = False
+                j = i + 1
+                while j < len(json_str) and json_str[j].isspace():
+                    j += 1
+                if j < len(json_str) and json_str[j] in [',', '}', ']', ':']:
+                    is_structural = True
+                
+                if is_structural:
+                    fixed_chars.append(char)
+                    in_string = False
+                else:
+                    # Unescaped quote inside string
+                    fixed_chars.append('\\"')
+            else:
+                fixed_chars.append(char)
+                in_string = True
+        elif char == '\n' and in_string:
+            fixed_chars.append('\\n')
+        else:
+            fixed_chars.append(char)
+        i += 1
+        
+    return "".join(fixed_chars)
 
 def execute_integration_plan(processed_json_file: str, source_note_path: str = None) -> (bool, str):
     """
@@ -15,7 +63,15 @@ def execute_integration_plan(processed_json_file: str, source_note_path: str = N
     
     try:
         with open(processed_json_file, 'r', encoding='utf-8') as f:
-            structured_insights = json.load(f)
+            raw_content = f.read()
+            
+        try:
+            structured_insights = json.loads(raw_content)
+        except json.JSONDecodeError:
+            # Attempt to fix and reload
+            fixed_content = _fix_invalid_json(raw_content)
+            structured_insights = json.loads(fixed_content)
+            
     except json.JSONDecodeError as e:
         return False, f"Error decoding JSON from {processed_json_file}: {e}"
     except Exception as e:
