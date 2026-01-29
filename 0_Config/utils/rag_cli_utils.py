@@ -86,8 +86,8 @@ def find_relevant_notes(search_topics: list, note_map: dict) -> list:
     
     # Define high-priority RAG folders
     priority_folders = [
-        "2_Literature_Notes/Personal/Preferences/",
-        "0_Config/" # Configuration files are also high priority context
+        "3_Permanent_Notes/",  # Core personal knowledge & synthesis (High Priority)
+        "0_Config/"            # System context
     ]
 
     for topic in search_topics:
@@ -97,15 +97,15 @@ def find_relevant_notes(search_topics: list, note_map: dict) -> list:
             score = 0
             # Check against title, tags, aliases, summary
             if normalized_topic in metadata['title'].lower():
-                score += 3 # Higher score for title match
+                score += 5 # Boost title match
             
             for tag in metadata['tags']:
                 if normalized_topic in tag.lower():
-                    score += 2
+                    score += 3
             
             for alias in metadata['aliases']:
                 if normalized_topic in alias.lower():
-                    score += 2
+                    score += 3
             
             if normalized_topic in metadata['summary'].lower():
                 score += 1
@@ -118,7 +118,7 @@ def find_relevant_notes(search_topics: list, note_map: dict) -> list:
             if score > 0: # Only boost if there's an initial match
                 for p_folder in priority_folders:
                     if file_path.startswith(p_folder):
-                        score += 10 # Significant boost for priority folders
+                        score += 30 # Heavy boost for core context to drown out academic noise in Literature Notes
 
             if score > 0:
                 ranked_relevant_notes[file_path] += score

@@ -109,6 +109,42 @@ def sync_live_to_repo(dry_run=False):
          if not dry_run:
              shutil.copy2(live_template, repo_template)
 
+    # --- Sync gemini_subagent ---
+    LIVE_AGENT_DIR = os.path.join(VAULT_ROOT, "gemini_subagent")
+    REPO_AGENT_DIR = os.path.join(REPO_ROOT, "gemini_subagent")
+    
+    print(f"[*] Syncing Live Agent -> MEAT_OS Repo...")
+    if os.path.exists(LIVE_AGENT_DIR):
+        for root, dirs, files in os.walk(LIVE_AGENT_DIR):
+            rel_path = os.path.relpath(root, LIVE_AGENT_DIR)
+            
+            # Target dir
+            if rel_path == ".":
+                current_target_dir = REPO_AGENT_DIR
+            else:
+                current_target_dir = os.path.join(REPO_AGENT_DIR, rel_path)
+
+            # Filter dirs
+            dirs[:] = [d for d in dirs if d not in ["workspace", "__pycache__", ".git"]]
+            
+            for f in files:
+                src_file = os.path.join(root, f)
+                dst_file = os.path.join(current_target_dir, f)
+                
+                if f.endswith(".pyc"): continue
+                if f == ".DS_Store": continue
+
+                if os.path.exists(dst_file):
+                    print(f"[^] Updating Repo Agent: {os.path.join(rel_path, f)}")
+                    if not dry_run:
+                        shutil.copy2(src_file, dst_file)
+                else:
+                    if f.endswith(".py") or f.endswith(".sh") or f == "README.md":
+                        print(f"[+] Adding New Agent File: {os.path.join(rel_path, f)}")
+                        if not dry_run:
+                            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+                            shutil.copy2(src_file, dst_file)
+
     print("[*] Sync Complete. Verify changes in _system/MEAT_OS before committing.")
 
 if __name__ == "__main__":

@@ -26,7 +26,11 @@ You are performing a "Safe Integration" of new information into your PKM vault.
 1.  **Analyze the "Structured Extraction" Section:** Use this section of the input as the primary source for identifying new updates.
 2.  **Values, Preferences, and Needs (TAG ONLY):** Do NOT create new atomic notes for these concepts unless the user is explicitly providing a formal definition or philosophical stance. Instead, apply the relevant hierarchical tag (e.g., `#value/efficiency`, `#preference/cli`) to the source synthesis note or the related log note.
 3.  **Handle Life Events (#log/):** You do NOT need to create separate log notes for every event. The `#log/` tag within the synthesis note is often sufficient context. ONLY create or update a separate log note in `6_Logs/` if the experience is a significant, recurring theme or if the user explicitly mentions a previous log note by name.
-4.  **Atomic Notes:** Create ONLY if the concept is "Totally Different" or a new entity.
+4.  **Atomic Notes (PROACTIVE):**
+    *   **Goal:** Expand the knowledge graph.
+    *   **Instruction:** Create `new_note` entries for distinct **Concepts**, **Entities** (people, places, works), or **Principles** found in the input that are **MISSING** from the provided `RAG Context`.
+    *   **Check "Structured Extraction":** Use the "Key Facts & Beliefs" and "Personal Observations" bullets as a checklist. If a key noun or concept there (e.g., "Pneumatic Metabolism", "Soft Brutalism") doesn't have a link or an existing note in the RAG, **CREATE IT**.
+    *   **Don't hold back:** It is better to create a valid atomic note than to leave a concept unlinked.
 
 ### JSON OUTPUT FORMAT (STRICT - DO NOT IGNORE)
 You MUST output a VALID JSON ARRAY of objects. 
@@ -47,20 +51,26 @@ Types:
 
 """
 
-def get_integrate_critique_prompt(json_filename, source_note_filename):
+def get_integrate_critique_prompt(json_filename, source_note_filename, rag_context_filename):
     return f"""
-Audit the Integration JSON Plan against the original source.
+Audit the Integration JSON Plan against the original source and existing context.
 
 ### INPUTS
 1. **JSON Plan:** `{json_filename}`
 2. **Original Source:** `{source_note_filename}`
+3. **RAG Context:** `{rag_context_filename}`
 
-**Action Required:** Read BOTH files.
+**Action Required:** Read ALL THREE files.
 
 ### AUDIT CRITERIA
 1.  **JSON Syntax (CRITICAL):** Is it valid JSON? Check for raw unescaped newlines inside string values (which is invalid). Ensure all newlines are `\n`.
-2.  **Clutter Check:** Are there `new_note` entries for simple definitions that should be tags? (e.g., a note for "Efficiency" when `#value/efficiency` is better).
-3.  **Voice Check:** Do the `content` fields use "I" (First Person)?
+2.  **Redundancy Check:** Check `new_note` entries against the `RAG Context`.
+    *   **FAIL:** Creating a note for a concept that already exists in the RAG context (unless it's a significant update/refactor).
+    *   **FAIL:** Creating a note for a simple definition that should be a tag (e.g., `#value/efficiency`).
+3.  **Voice Check:** 
+    *   **Stream A (User Insights/Main Synthesis):** MUST use "I" (First Person). FAIL if it uses "The user".
+    *   **Stream B (External/Entities):** SHOULD be Objective/Third Person (e.g., "The poem represents...", "风九 is..."). 
+    *   **Verdict:** PASS only if the distinction is respected.
 4.  **Destructive Check:** Are there `edit_note` entries with empty content?
 
 ### OUTPUT STRUCTURE

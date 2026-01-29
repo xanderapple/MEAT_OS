@@ -19,6 +19,7 @@ def execute_script(command: str, args: list = None) -> (bool, str):
         return False, f"Error executing {command} {' '.join(args)}: {result.stderr.strip()}\n{result.stdout.strip()}"
 
 def sanitize_filename(text):
-    """Remove invalid characters for Windows/Linux filenames: < > : \" / \\ | ? *"""
+    """Remove invalid characters and replace spaces with underscores for consistency."""
     text = re.sub(r'[<>:"/\\|?*]', '', text).strip()
+    text = text.replace(' ', '_')
     return text

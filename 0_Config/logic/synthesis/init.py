@@ -11,11 +11,11 @@ from .integrate import run_integrate_workflow
 # We need to import the RAG handler. 
 # We do this inside the function to avoid potential top-level circular imports if any exist.
 
-def run_init_workflow(source_path, input_mode="direct", resume_from=None):
+def run_init_workflow(source_path, input_mode="direct", resume=False):
     """
     Executes the FULL synthesis chain:
     Archive -> Preliminary -> Keywords -> RAG -> Final -> Integrate -> Apply
-    If resume_from is provided, skips steps accordingly.
+    If resume is True, attempts to pick up from existing state.
     """
     
     # --- STEP 0: ARCHIVE & SETUP ---
@@ -24,35 +24,8 @@ def run_init_workflow(source_path, input_mode="direct", resume_from=None):
     final_path = ""
     rag_output_path = os.path.join(os.environ.get("GEMINI_TEMP_DIR", "."), "consolidated_rag_context.md")
 
-    if resume_from:
-        if not os.path.exists(resume_from):
-            return False, f"Resume file not found: {resume_from}"
-        
-        # Detection logic
-        base_resume = os.path.basename(resume_from)
-        
-        if resume_from == source_path:
-             print(f"\n>>> STARTING SYNTHESIS with archived source: {resume_from}")
-             # Do NOT set prelim_path or final_path, let it run Step 1.
-        elif base_resume.startswith("final_synthesis_") or "final_synthesis" in base_resume:
-            print(f"\n>>> RESUMING SYNTHESIS from Final Note: {resume_from}")
-            print("[Status] Skipping Steps 1-3.")
-            final_path = resume_from
-            # We still need RAG context for integration, try to find it or create dummy
-            if not os.path.exists(rag_output_path):
-                print("Warning: RAG context not found. Creating empty context for integration.")
-                with open(rag_output_path, 'w', encoding='utf-8') as f:
-                    f.write("No RAG context available (Resumed from Final).")
-        elif base_resume.startswith("preliminary_") or "preliminary" in base_resume:
-            print(f"\n>>> RESUMING SYNTHESIS from Preliminary Note: {resume_from}")
-            print("[Status] Skipping Step 1.")
-            prelim_path = resume_from
-        else:
-            # Fallback: If it's not a recognized synthesis note, assume it's just the source
-            print(f"\n>>> STARTING SYNTHESIS (using provided resume-from as source): {resume_from}")
-            final_source_path = resume_from
-    else:
-        # (Standard Archiving Logic)
+    if not resume:
+        # (Standard Archiving Logic - Only if not resuming)
         if os.path.exists(source_path):
             if os.path.dirname(source_path) == "":
                 archive_dir = "=3_Archived"
@@ -69,22 +42,21 @@ def run_init_workflow(source_path, input_mode="direct", resume_from=None):
                     print(f"Warning: Failed to move source file: {e}")
 
     # --- STEP 1: PRELIMINARY ---
-    if not prelim_path and not final_path:
-        print("\n>>> STEP 1: PRELIMINARY SYNTHESIS")
-        success_prelim, result_prelim = run_preliminary_workflow(final_source_path)
-        if not success_prelim:
-            return False, f"Preliminary Synthesis Failed: {result_prelim}"
-        
-        if "Final Draft: " in result_prelim:
-            # More robust parsing
-            prelim_path = result_prelim.split("Final Draft: ")[1].strip().split('\n')[0].strip()
-        
-        if not prelim_path or not os.path.exists(prelim_path):
-            if os.path.exists(result_prelim): 
-                 prelim_path = result_prelim
-            else:
-                 return False, f"Could not locate preliminary file from result: {result_prelim}"
-        print(f"Preliminary File: {prelim_path}")
+    print("\n>>> STEP 1: PRELIMINARY SYNTHESIS")
+    success_prelim, result_prelim = run_preliminary_workflow(final_source_path, resume=resume)
+    if not success_prelim:
+        return False, f"Preliminary Synthesis Failed: {result_prelim}"
+    
+    if "Final Draft: " in result_prelim:
+        # More robust parsing
+        prelim_path = result_prelim.split("Final Draft: ")[1].strip().split('\n')[0].strip()
+    
+    if not prelim_path or not os.path.exists(prelim_path):
+        if os.path.exists(result_prelim): 
+             prelim_path = result_prelim
+        else:
+             return False, f"Could not locate preliminary file from result: {result_prelim}"
+    print(f"Preliminary File: {prelim_path}")
 
     # --- STEP 2 & 3: RAG & FINAL ---
     if not final_path:

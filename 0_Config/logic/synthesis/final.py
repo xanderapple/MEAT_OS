@@ -7,143 +7,93 @@ def _run_single_final_synthesis(prelim_path, rag_path):
     """
     Runs the Sub-Agent to generate the Final Note.
     """
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    os.makedirs(workspace_dir, exist_ok=True)
-    
-    # Filenames in workspace
+    # Prepare Prompt
     prelim_file = "preliminary.md"
     rag_file = "rag_context.md"
-    draft_file = "final_draft.md"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_prelim = os.path.join(workspace_dir, prelim_file)
-    abs_rag = os.path.join(workspace_dir, rag_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-    abs_draft = os.path.join(workspace_dir, draft_file)
-
-    # 1. Stage Files
-    shutil.copy(prelim_path, abs_prelim)
-    if os.path.exists(rag_path):
-        shutil.copy(rag_path, abs_rag)
-    else:
-        with open(abs_rag, 'w', encoding='utf-8') as f:
-            f.write("No RAG context provided.")
-
-    # 2. Generate Prompt
     prompt = final_prompts.get_final_prompt(prelim_file, rag_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
 
-    # 3. Dispatch
+    # Prepare Input Files
+    input_files = {
+        prelim_file: prelim_path,
+        rag_file: rag_path if os.path.exists(rag_path) else "/dev/null"
+    }
+
+    # Dispatch
     print("Dispatching Final Note Generation...")
-    call_sub_agent("__USE_EXISTING__")
+    result = call_sub_agent(prompt, input_files=input_files)
 
-    # 4. Retrieve
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        shutil.move(abs_task_output, abs_draft)
-        return abs_draft 
+    # Retrieve
+    if result:
+        workspace_dir = os.path.join("gemini_subagent", "workspace")
+        draft_file = os.path.join(workspace_dir, "final_draft.md")
+        with open(draft_file, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return draft_file
     return None
 
 def _run_final_critique(draft_path, source_path):
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    
+    # Prepare Prompt
     draft_file = "final_draft.md" 
     source_file = "source_ground_truth.md"
-    report_file = "critique_report.md"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_draft = os.path.join(workspace_dir, draft_file)
-    abs_source = os.path.join(workspace_dir, source_file)
-    abs_report = os.path.join(workspace_dir, report_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-
-    # 1. Stage Files
-    if draft_path != abs_draft:
-        shutil.copy(draft_path, abs_draft)
-    if source_path and os.path.exists(source_path):
-        shutil.copy(source_path, abs_source)
-    else:
-        with open(abs_source, 'w', encoding='utf-8') as f:
-            f.write("Original source not provided.")
-    
     prompt = final_prompts.get_final_critique_prompt(draft_file, source_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
+
+    # Prepare Input Files
+    input_files = {
+        draft_file: draft_path,
+        source_file: source_path if source_path and os.path.exists(source_path) else "/dev/null"
+    }
         
     print("Dispatching Final Note Critique...")
-    call_sub_agent("__USE_EXISTING__")
+    result = call_sub_agent(prompt, input_files=input_files)
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        shutil.move(abs_task_output, abs_report)
-        return abs_report
+    if result:
+        workspace_dir = os.path.join("gemini_subagent", "workspace")
+        report_file = os.path.join(workspace_dir, "critique_report.md")
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return report_file
     return None
 
 def _run_final_refinement(draft_path, report_path, source_path):
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    
+    # Prepare Prompt
     draft_file = "final_draft.md"
     source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
-    output_file = "final_draft_refined.md"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_draft = os.path.join(workspace_dir, draft_file)
-    abs_source = os.path.join(workspace_dir, source_file)
-    abs_report = os.path.join(workspace_dir, report_file)
-    abs_output = os.path.join(workspace_dir, output_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-
-    # 1. Stage Files (Crucial for resume or multi-step logic)
-    if draft_path != abs_draft:
-        shutil.copy(draft_path, abs_draft)
-    if report_path != abs_report:
-        shutil.copy(report_path, abs_report)
-    if source_path and os.path.exists(source_path):
-        shutil.copy(source_path, abs_source)
-    
     prompt = final_prompts.get_final_refinement_prompt(draft_file, report_file, source_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
-        
-    print("Dispatching Final Note Refinement...")
-    call_sub_agent("__USE_EXISTING__")
+
+    # Prepare Input Files
+    input_files = {
+        draft_file: draft_path,
+        report_file: report_path,
+        source_file: source_path if source_path and os.path.exists(source_path) else "/dev/null"
+    }
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        # Move refined back to draft_file for the next potential iteration or check
-        shutil.move(abs_task_output, abs_draft)
-        return abs_draft
+    print("Dispatching Final Note Refinement...")
+    result = call_sub_agent(prompt, input_files=input_files)
+    
+    if result:
+        workspace_dir = os.path.join("gemini_subagent", "workspace")
+        draft_out = os.path.join(workspace_dir, "final_draft.md")
+        with open(draft_out, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return draft_out
     return None
 
 def extract_keywords_agent(file_path):
     """
     Runs a sub-agent task to extract keywords from a file.
     """
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    os.makedirs(workspace_dir, exist_ok=True)
-    
     content_file = "keyword_source.md"
-    output_file = "keywords.txt"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_content = os.path.join(workspace_dir, content_file)
-    abs_output = os.path.join(workspace_dir, output_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-    
-    shutil.copy(file_path, abs_content)
-    
     prompt = final_prompts.get_keyword_extraction_prompt(content_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
+    
+    input_files = {
+        content_file: file_path
+    }
         
     print("Dispatching Keyword Extraction...")
-    result_content = call_sub_agent("__USE_EXISTING__")
+    result_content = call_sub_agent(prompt, input_files=input_files)
     
     if result_content:
-        # Sometimes the agent might put extra text, try to find a comma-separated line
-        # or just return the whole thing if it's short.
         return result_content.strip()
         
     return None

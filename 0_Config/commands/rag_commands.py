@@ -93,20 +93,44 @@ def handle_rag_commands(args):
             original_stdout = original_sys.stdout
             try:
                 original_sys.stdout = captured_stdout
-                consolidate_success, consolidate_msg = handle_rag_commands(argparse.Namespace(rag_command="consolidate-context", output=output_path))
+                # Call consolidate-context WITHOUT output path so it prints content to stdout
+                consolidate_success, consolidate_msg = handle_rag_commands(argparse.Namespace(rag_command="consolidate-context", output=None))
             finally:
                 original_sys.stdout = original_stdout
             
             if not consolidate_success:
                 return False, f"Failed to consolidate context: {consolidate_msg}"
             
-            content = captured_stdout.getvalue()
+            # captured_stdout now contains the success message from handle_rag_commands wrapper AND the script output
+            # Actually, handle_rag_commands returns the output string if success.
+            # But wait, execute_script captures stdout.
+            
+            # Let's rely on the return value of handle_rag_commands for content, 
+            # BUT handle_rag_commands wraps the output in "Consolidated RAG context:\n..."
+            
+            # Actually, looking at handle_rag_commands logic for consolidate-context:
+            # success, output = execute_script(...)
+            # return True, f"Consolidated RAG context:\n{output}"
+            
+            # So consolidate_msg ALREADY contains the content!
+            # We don't need to capture stdout if we trust the return value.
+            
+            # Let's verify: execute_script returns (True, stdout_content).
+            # So consolidate_msg = "Consolidated RAG context:\n" + stdout_content
+            
+            # We can just strip the prefix.
+            raw_content = consolidate_msg.replace("Consolidated RAG context:\n", "", 1)
+            
+            # Inject Keywords Header
+            header = f"# Active RAG Keywords\n> {args.keywords}\n\n"
+            final_content = header + raw_content
             
             if output_path:
+                 with open(output_path, 'w', encoding='utf-8') as f:
+                     f.write(final_content)
                  return True, f"RAG context prepared and saved to {output_path}."
             else:
-                 # Return the actual content as the log message so the caller (synthesis) gets it
-                 return True, content
+                 return True, final_content
         
         elif source_input:
             # Keywords not provided, but source (file or content) is.

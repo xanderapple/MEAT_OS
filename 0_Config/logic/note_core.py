@@ -4,57 +4,78 @@ import re
 import yaml
 from ..utils.command_utils import sanitize_filename
 
-def create_atomic_note(content: str, title: str = None, tags: str = None, directory: str = "3_Permanent_Notes") -> (bool, str, str):
+def create_atomic_note(content: str, title: str = None, tags: str = None, directory: str = "3_Permanent_Notes", aliases: list = None) -> (bool, str, str):
     """
     Core logic for creating an atomic note.
     Returns (success: bool, message: str, file_path: str).
     """
-    # Generate title if not provided
-    if not title:
-        title = content.split('\n')[0][:50].strip() 
-        if title.startswith('# '):
-            title = title[2:].strip()
-        if not title: # Fallback for empty content
-            title = "Untitled Note"
+    # Extract existing YAML if present
+    yaml_content = {}
+    remaining_content = content
+    yaml_pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
+    match = yaml_pattern.match(content)
+    if match:
+        try:
+            yaml_content = yaml.safe_load(match.group(1)) or {}
+            remaining_content = content[match.end():].strip()
+        except Exception as e:
+            print(f"Warning: Failed to parse existing YAML: {e}")
+
+    # Priority: Function Argument > Existing YAML > Generated
+    final_title = title or yaml_content.get('title')
+    if not final_title:
+        first_line = remaining_content.split('\n')[0][:50].strip()
+        if first_line.startswith('# '):
+            final_title = first_line[2:].strip()
+        else:
+            final_title = "Untitled Note"
     
-    # Generate filename
-    safe_title = sanitize_filename(title)
-    filename = f"{safe_title}.md"
-    
-    note_path = os.path.join(directory, filename)
-    
-    # Construct YAML frontmatter
-    frontmatter_tags = ""
+    # Final metadata construction
+    final_tags = yaml_content.get('tags', [])
+    if isinstance(final_tags, str): final_tags = [final_tags]
     if tags:
-        frontmatter_tags = "\n".join([f"  - {tag.strip()}" for tag in tags.split(',')])
+        new_tags = [t.strip() for t in tags.split(',')]
+        final_tags = list(set(final_tags + new_tags))
+    
+    final_aliases = yaml_content.get('aliases', [])
+    if isinstance(final_aliases, str): final_aliases = [final_aliases]
+    if aliases:
+        final_aliases = list(set(final_aliases + aliases))
 
-    # Standardized to date-only
     current_date = datetime.date.today().strftime("%Y-%m-%d")
+    created_date = yaml_content.get('created') or yaml_content.get('Created') or current_date
 
-    # Smart Header: Only add H1 if content doesn't start with one
+    # Filename
+    safe_title = sanitize_filename(final_title)
+    filename = f"{safe_title}.md"
+    note_path = os.path.join(directory, filename)
+
+    # Rebuild Frontmatter
+    metadata = {
+        'title': final_title,
+        'tags': final_tags,
+        'aliases': final_aliases,
+        'created': created_date,
+        'edited': current_date
+    }
+    
+    # Smart Header
     header_block = ""
-    if not content.strip().startswith("# "):
-        header_block = f"# {title}\nCreated on [[{current_date}]]\n\n"
+    if not remaining_content.startswith("# "):
+        header_block = f"# {final_title}\nCreated on [[{created_date}]]\n\n"
 
-    frontmatter = f"""---
-Tags:
-{frontmatter_tags}
-Aliases: []
-Created: {current_date}
----
+    full_note = f"---\n{yaml.dump(metadata, allow_unicode=True)}---\n\n{header_block}{remaining_content}"
+    
+    # References Section (Ensure it exists but don't duplicate)
+    if "## References" not in full_note and "# References" not in full_note:
+        full_note += "\n\n---\n## References\n"
 
-{header_block}{content}
-
----
-## References
-"""
     # Ensure directory exists
     os.makedirs(directory, exist_ok=True)
 
-    # Write the note
     try:
         with open(note_path, 'w', encoding='utf-8') as f:
-            f.write(frontmatter)
+            f.write(full_note)
         return True, f"Successfully created note: {note_path}", note_path
     except Exception as e:
         return False, f"Error creating note at {note_path}: {e}", ""

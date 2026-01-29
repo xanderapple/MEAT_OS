@@ -30,47 +30,33 @@ def _run_single_preliminary_synthesis(source_input):
     """
     Helper function to run a single preliminary synthesis task via the Sub-Agent.
     """
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    os.makedirs(workspace_dir, exist_ok=True)
-    
+    # Prepare Prompt
     context_source_file = "context_source.md"
-    task_prompt_file = "task_prompt.md"
-    task_output_file = "task_output.md"
-    
-    abs_context_source = os.path.join(workspace_dir, context_source_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-    abs_task_output = os.path.join(workspace_dir, task_output_file)
-
-    # Stage Source
-    content_to_stage = ""
-    if os.path.exists(source_input):
-        try:
-            with open(source_input, 'r', encoding='utf-8') as f:
-                content_to_stage = f.read()
-        except Exception as e:
-            print(f"Error reading source file: {e}")
-            return None
-    else:
-        content_to_stage = source_input
-
-    with open(abs_context_source, 'w', encoding='utf-8') as f:
-        f.write(content_to_stage)
-
-    # Generate Prompt
     agent_instruction = preliminary_prompts.get_preliminary_prompt(context_source_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(agent_instruction)
+
+    # Prepare Input Files
+    input_files = {}
+    if os.path.exists(source_input):
+        input_files[context_source_file] = source_input
+    else:
+        # If source_input is direct content, write to temp file first
+        temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
+        temp_src = os.path.join(temp_dir, "temp_prelim_src.md")
+        with open(temp_src, 'w', encoding='utf-8') as f:
+            f.write(source_input)
+        input_files[context_source_file] = temp_src
 
     # Dispatch
     print(f"[Status] Dispatching Sub-Agent Task (Generation)... Source: {os.path.basename(source_input) if os.path.exists(source_input) else 'Direct Input'}")
-    call_sub_agent("__USE_EXISTING__")
+    result = call_sub_agent(agent_instruction, input_files=input_files)
 
     # Retrieve
-    if os.path.exists(abs_task_output):
+    if result:
         temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
         os.makedirs(temp_dir, exist_ok=True)
         final_output_path = os.path.join(temp_dir, f"preliminary_synthesis_{os.urandom(4).hex()}.md")
-        shutil.move(abs_task_output, final_output_path)
+        with open(final_output_path, 'w', encoding='utf-8') as f:
+            f.write(result)
         return final_output_path
     else:
         print("Sub-Agent failed to generate output.")
@@ -96,17 +82,29 @@ def _combine_synthesis_files(file_list):
         f.write(combined_content)
     return output_path
 
-def run_preliminary_workflow(source_input):
+def run_preliminary_workflow(source_input, resume=False):
     """
     Executes the full Preliminary Synthesis workflow (Chunking -> Generation -> Loop[Audit -> Refine]).
     """
-    # Check for existing state
-    state = _load_synthesis_state()
-    if state and state.get("source") == source_input:
-        print(f"\n>>> RESUMING PRELIMINARY SYNTHESIS: {len(state['outputs'])}/{len(state['chunks'])} chunks complete.")
-        chunk_paths = state["chunks"]
-        output_paths = state["outputs"]
-    else:
+    state = None
+    if resume:
+        # Check for existing state
+        state = _load_synthesis_state()
+        if state and state.get("source") == source_input:
+            print(f"\n>>> RESUMING PRELIMINARY SYNTHESIS: {len(state['outputs'])}/{len(state['chunks'])} chunks complete.")
+            chunk_paths = state["chunks"]
+            output_paths = state["outputs"]
+        else:
+            print("[Warning] Resume requested but no matching state found or source changed. Starting fresh.")
+            state = None
+
+    if not state:
+        # Fresh Start: Clear any stale state
+        temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
+        state_file = os.path.join(temp_dir, "synthesis_state.json")
+        if os.path.exists(state_file):
+            os.remove(state_file)
+
         # Check size for chunking
         raw_lines = []
         if os.path.exists(source_input):

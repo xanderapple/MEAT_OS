@@ -26,9 +26,13 @@ The input content is located in the file: `{source_filename}`
     *   **Emotional Context:** Do not sanitize strong emotions into clinical reports (e.g., instead of "The user expressed frustration," keep "It feels like a hurdle").
 *   **Direct Perspective:** Write Stream A as if it is the user's own knowledge base or inner monologue. Use "I" or direct statements.
 
-### PART 1.5: THE LANGUAGE MANDATE (CHINESE INPUT)
-*   **Preserve Original Language:** If the user speaks/writes in Chinese, Stream A (User Insights) **MUST** be written in **Chinese** to capture the nuance. Do NOT translate the user's voice into English.
-*   **Stream B (Literature):** Can be in English or Chinese, depending on the most appropriate context, but generally defaults to the language of the input or standard English for technical definitions if clearer.
+### PART 1.5: THE LANGUAGE & IDIOM MANDATE
+*   **Preserve Original Language:** If the user speaks/writes in Chinese, Stream A (User Insights) **MUST** be written in **Chinese**.
+*   **Mixed Language Preservation (CRITICAL):** If the user mixes languages (e.g., English sentences with Chinese phrases), you **MUST PRESERVE** the specific non-English terms/phrases.
+    *   **Do NOT translate** specific idioms or "spirit" phrases into English placeholders.
+    *   *Good:* "I maintain a '不说破，但我看好你' silent agreement."
+    *   *Bad:* "I maintain a 'tacit understanding' silent agreement."
+*   **Stream B (Literature):** Can be in English or Chinese, depending on the most appropriate context.
 
 ### PART 2: INPUT PROCESSING & AFFIRMATION RIGOR
 Before synthesizing, you must interpret the input using these strict rules:
@@ -118,12 +122,14 @@ You MUST strictly adhere to the standards defined in `0_Config/STRUCTURE_DEFINIT
 *   **Mirror the User's Voice:** Use the user's specific vocabulary, slang, and energy (e.g., "softlock," "flex," "snappy," "insane").
 *   **No Sanitization:** Capture the intensity. Avoid "Mechanism," "Characteristics," "Furthermore," "In conclusion."
 
-### PART 2: THE LANGUAGE MANDATE (CHINESE INPUT)
-If the input source is in Chinese:
-*   **Filename/Title:** MUST be in **English** (Standard naming convention).
-*   **Aliases:** You MUST include the **Chinese name(s)** in the YAML `aliases` field.
-*   **Content Body:** You MUST write the content (Narrative, Extractions, etc.) in **Chinese**, preserving the user's original wording and style.
-    *   *Exception:* Keywords and technical terms that the user explicitly uses in English should remain in English.
+### PART 2: THE LANGUAGE MANDATE
+*   **Primary Language:** Write the body in the primary language of the user's input (English or Chinese).
+*   **Idiom Preservation (CRITICAL):** You **MUST** preserve specific phrases, idioms, or metaphors in their **original language** (especially Chinese phrases within English text).
+    *   **Do NOT translate** these high-nuance phrases. Keep them as the user wrote them (e.g., "The vibe is '松弛感'").
+*   **If Input is Predominantly Chinese:**
+    *   **Filename/Title:** MUST be in **English** (Standard naming convention).
+    *   **Aliases:** You MUST include the **Chinese name(s)** in the YAML `aliases` field.
+    *   **Content Body:** You MUST write the content (Narrative, Extractions, etc.) in **Chinese**, preserving the user's original wording and style.
 
 ### PART 3: OUTPUT STRUCTURE (STRICT MARKDOWN)
 Compose the final note with the following structure (per `STRUCTURE_DEFINITIONS.md`):

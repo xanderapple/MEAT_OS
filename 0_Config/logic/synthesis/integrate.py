@@ -4,117 +4,89 @@ from ...prompts import integrate_prompts
 from ...scripts.call_agent_task import call_sub_agent
 
 def _run_integrate_gen(rag_path, source_path, content_path, tags):
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
-    os.makedirs(workspace_dir, exist_ok=True)
-    
+    # Prepare Prompt
     rag_file = "rag_context.md"
     source_file = "source_note.md"
-    input_file = "input_content.md" # The synthesis note content
-    json_file = "integration_plan.json"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_rag = os.path.join(workspace_dir, rag_file)
-    abs_source = os.path.join(workspace_dir, source_file)
-    abs_input = os.path.join(workspace_dir, input_file)
-    abs_json = os.path.join(workspace_dir, json_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-
-    # 1. Stage
-    if os.path.exists(rag_path): shutil.copy(rag_path, abs_rag)
-    else: open(abs_rag, 'w').close()
-
-    if source_path and os.path.exists(source_path): shutil.copy(source_path, abs_source)
-    else: open(abs_source, 'w').close()
-    
-    # Input content is usually a string or file
-    if os.path.exists(content_path): shutil.copy(content_path, abs_input)
-    else: 
-        with open(abs_input, 'w', encoding='utf-8') as f:
-            f.write(content_path) # Treat as string
-
-    # 2. Prompt
+    input_file = "input_content.md"
     prompt = integrate_prompts.get_integrate_prompt(rag_file, source_file, input_file, tags)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
 
-    # 3. Dispatch
-    print("Dispatching Integration Plan Generation...")
-    call_sub_agent("__USE_EXISTING__")
+    # Prepare Input Files
+    input_files = {
+        rag_file: rag_path,
+        source_file: source_path if source_path else "/dev/null"
+    }
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        shutil.move(abs_task_output, abs_json)
-        return abs_json
+    # Handle content_path (could be string or path)
+    if os.path.exists(content_path):
+        input_files[input_file] = content_path
+    else:
+        temp_input = os.path.join(os.environ.get("GEMINI_TEMP_DIR", "."), "temp_integrate_input.md")
+        with open(temp_input, 'w', encoding='utf-8') as f:
+            f.write(content_path)
+        input_files[input_file] = temp_input
+
+    # Dispatch
+    print("Dispatching Integration Plan Generation...")
+    result = call_sub_agent(prompt, input_files=input_files)
+    
+    if result:
+        temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
+        json_file = os.path.join(temp_dir, f"integration_plan_{os.urandom(4).hex()}.json")
+        with open(json_file, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return json_file
     return None
 
-def _run_integrate_critique(json_path, source_path):
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
+def _run_integrate_critique(json_path, source_path, rag_path):
+    # Prepare Prompt
     json_file = "integration_plan.json"
     source_file = "source_ground_truth.md"
-    report_file = "critique_report.md"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_json = os.path.join(workspace_dir, json_file)
-    abs_source = os.path.join(workspace_dir, source_file)
-    abs_report = os.path.join(workspace_dir, report_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
+    rag_file = "rag_context.md"
+    prompt = integrate_prompts.get_integrate_critique_prompt(json_file, source_file, rag_file)
 
-    # 1. Stage
-    if json_path != abs_json:
-        shutil.copy(json_path, abs_json)
-    if source_path and os.path.exists(source_path):
-        shutil.copy(source_path, abs_source)
-    else:
-        with open(abs_source, 'w', encoding='utf-8') as f:
-            f.write("Original source not provided.")
-    
-    prompt = integrate_prompts.get_integrate_critique_prompt(json_file, source_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
+    # Prepare Input Files
+    input_files = {
+        json_file: json_path,
+        source_file: source_path if source_path else "/dev/null",
+        rag_file: rag_path if rag_path else "/dev/null"
+    }
 
-    # 3. Dispatch
+    # Dispatch
     print("Dispatching Integration Audit...")
-    call_sub_agent("__USE_EXISTING__")
+    result = call_sub_agent(prompt, input_files=input_files)
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        shutil.move(abs_task_output, abs_report)
-        return abs_report
+    if result:
+        temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
+        report_file = os.path.join(temp_dir, f"critique_report_{os.urandom(4).hex()}.md")
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return report_file
     return None
 
 def _run_integrate_refine(json_path, report_path, source_path):
-    workspace_dir = os.path.join("gemini_subagent", "workspace")
+    # Prepare Prompt
     json_file = "integration_plan.json"
     source_file = "source_ground_truth.md"
     report_file = "critique_report.md"
-    output_file = "integration_plan_refined.json"
-    task_prompt_file = "task_prompt.md"
-    
-    abs_json = os.path.join(workspace_dir, json_file)
-    abs_source = os.path.join(workspace_dir, source_file)
-    abs_report = os.path.join(workspace_dir, report_file)
-    abs_output = os.path.join(workspace_dir, output_file)
-    abs_task_prompt = os.path.join(workspace_dir, task_prompt_file)
-
-    # 1. Stage
-    if json_path != abs_json:
-        shutil.copy(json_path, abs_json)
-    if report_path != abs_report:
-        shutil.copy(report_path, abs_report)
-    if source_path and os.path.exists(source_path):
-        shutil.copy(source_path, abs_source)
-    
     prompt = integrate_prompts.get_integrate_refinement_prompt(json_file, report_file, source_file)
-    with open(abs_task_prompt, 'w', encoding='utf-8') as f:
-        f.write(prompt)
-        
+
+    # Prepare Input Files
+    input_files = {
+        json_file: json_path,
+        report_file: report_path,
+        source_file: source_path if source_path else "/dev/null"
+    }
+
+    # Dispatch
     print("Dispatching Integration Refinement...")
-    call_sub_agent("__USE_EXISTING__")
+    result = call_sub_agent(prompt, input_files=input_files)
     
-    abs_task_output = os.path.join(workspace_dir, "task_output.md")
-    if os.path.exists(abs_task_output):
-        shutil.move(abs_task_output, os.path.join(workspace_dir, json_file))
-        return os.path.join(workspace_dir, json_file)
+    if result:
+        temp_dir = os.environ.get("GEMINI_TEMP_DIR", ".")
+        json_out = os.path.join(temp_dir, f"integration_plan_refined_{os.urandom(4).hex()}.json")
+        with open(json_out, 'w', encoding='utf-8') as f:
+            f.write(result)
+        return json_out
     return None
 
 def run_integrate_workflow(rag_path, source_path, content_path, tags=""):
@@ -127,7 +99,7 @@ def run_integrate_workflow(rag_path, source_path, content_path, tags=""):
     MAX_RETRIES = 1
     for i in range(MAX_RETRIES):
         print(f"\nAudit Attempt {i+1}/{MAX_RETRIES}...")
-        report = _run_integrate_critique(current_json, source_path)
+        report = _run_integrate_critique(current_json, source_path, rag_path)
         if not report: break
         
         with open(report, 'r', encoding='utf-8') as f:

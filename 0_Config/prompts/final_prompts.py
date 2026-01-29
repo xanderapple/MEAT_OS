@@ -61,10 +61,14 @@ Your task is to audit a **Final Permanent Synthesis Note**.
     *   **FAIL:** Uses "The User", "He/She", or Passive Voice.
 2.  **Fidelity Check:** Does the draft miss any significant technical details or metaphors from the original source?
 3.  **Tagging Check:** Are there `#value/`, `#preference/`, etc. tags?
-4.  **Structure Check:**
+4.  **Language Check:** 
+    *   **Translation:** Did it translate specific Chinese idioms, metaphors, or "spirit" phrases into English? FAILS if yes.
+    *   **Parentheses:** Did it use "(Translation)" or "(Original)"? FAILS if yes.
+    *   **Pinyin:** Did it use Pinyin instead of characters? FAILS if yes.
+5.  **Structure Check:**
     *   Is there valid YAML frontmatter?
     *   Is the "Structured Extraction" section FLAT (no sub-headers)?
-5.  **Link Check:** Are there `[[Wikilinks]]` to other notes?
+6.  **Link Check:** Are there `[[Wikilinks]]` to other notes?
 
 ### OUTPUT STRUCTURE
 

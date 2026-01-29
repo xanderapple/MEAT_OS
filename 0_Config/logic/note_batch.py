@@ -87,8 +87,17 @@ def execute_integration_plan(processed_json_file: str, source_note_path: str = N
         current_file_path = ""
         
         if item["type"] == "new_note":
-            target_directory = item.get("directory", "3_Permanent_Notes")
-            success, message, file_path = create_atomic_note(item.get("content", ""), item.get("title"), item.get("tags"), target_directory)
+            # Default to 2_Literature_Notes for synthesis, 3_Permanent_Notes otherwise
+            default_dir = "2_Literature_Notes" if "SYNTH-" in item.get("title", "") else "3_Permanent_Notes"
+            target_directory = item.get("directory") or default_dir
+            
+            success, message, file_path = create_atomic_note(
+                item.get("content", ""), 
+                item.get("title"), 
+                item.get("tags"), 
+                target_directory,
+                aliases=item.get("aliases")
+            )
             integration_messages.append(message)
             if success and file_path:
                 files_to_add_to_git.append(file_path)

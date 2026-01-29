@@ -30,7 +30,14 @@ Your task is to perform a strict quality audit of a Preliminary Synthesis draft.
 *   **Mandate:** "{mandates.TAGGING_MANDATE}"
 *   **Audit Task:** Does Stream A contain specific hashtags like `#value/` or `#preference/`? If NO tags are present, it FAILS.
 
-#### 4. AFFIRMATION RIGOR
+#### 4. THE LANGUAGE & IDIOM MANDATE
+*   **Mandate:** "{mandates.LANGUAGE_MANDATE}"
+*   **Audit Task:** 
+    *   **Translation Check:** Did the draft translate specific Chinese idioms, metaphors, or "spirit" phrases into English? FAILS if yes.
+    *   **Parenthesis Check:** Did it use "(Translation)" or "(Original)"? FAILS if yes.
+    *   **Pinyin Check:** Did it use Pinyin instead of characters? FAILS if yes.
+
+#### 5. AFFIRMATION RIGOR
 *   Did the draft include AI-generated ideas that the user did NOT explicitly affirm?
 *   Is the separation between Stream A (User) and Stream B (LLM) crystal clear?
 

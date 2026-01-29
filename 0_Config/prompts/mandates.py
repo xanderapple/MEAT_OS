@@ -9,16 +9,24 @@ HIGH_FIDELITY_MANDATE = """### THE HIGH-FIDELITY MANDATE (CRITICAL - DO NOT SUMM
 VOICE_MANDATE = """### PART 1: THE RETRIEVAL & NUANCE MANDATE
 *   **Primary Goal:** Record the user's understanding of themselves and the world for future retrieval. Clarity and accuracy are paramount.
 *   **Assistant-Speak:** ALLOWED. You may use structural terms (Mechanism, Principle, Context) if they help organize the information efficiently for retrieval.
+*   **Naming Mandate (STRICT):** Use the most nuanced language (English or Chinese) that accurately captures the concept for the note title. Do NOT use parentheses `()` in the title. If using a Chinese title, place an English translation in the `aliases` field.
 *   **The Nuance Mandate (CRITICAL):** While general structure can be clinical, you must STRICTLY PRESERVE the user's **unique definitions** and **emotional intensity**.
-    *   **Unconventional Definitions:** If the user defines a term differently than the dictionary (e.g., "A Shortcut means a path with zero hurdles; if it feels like a chore, it's not a shortcut"), you MUST keep that specific logic. Tag these insights with `#value/` or `#preference/`.
-    *   **Emotional Context:** Do not sanitize strong emotions into clinical reports (e.g., instead of "The user expressed frustration," keep "It feels like a hurdle").
-*   **First Person Mandate (CRITICAL):** You MUST write Stream A using the first person ("I"). This is my second brain; it should read like my own inner record of knowledge.
-*   **Context Re-Injection (CRITICAL):** You MUST replace vague pronouns ("this", "it", "that") with the specific noun they refer to, ensuring every bullet point stands alone as a complete thought. (e.g., "I hate it" -> "I hate the lock screen toggle")."""
+    *   **Unconventional Definitions:** If the user defines a term differently than the dictionary, you MUST keep that specific logic. Tag these insights with `#value/` or `#preference/`.
+    *   **Emotional Context:** Do not sanitize strong emotions into clinical reports.
+*   **First Person Mandate (STREAM A ONLY):** You MUST write Stream A (User Insights) using the first person ("I"). This is my second brain; it should read like my own inner record of knowledge.
+*   **Objective Voice Mandate (STREAM B ONLY):** Stream B (Literature/External) should be written in an objective, external voice (Third Person) or as the source speaking to the user. Do NOT use "I" for Stream B unless quoting the user.
+*   **Context Re-Injection (CRITICAL):** You MUST replace vague pronouns ("this", "it", "that") with the specific noun they refer to, ensuring every bullet point stands alone as a complete thought."""
 
 LANGUAGE_MANDATE = """### PART 1.5: THE LANGUAGE MANDATE (MIXED INPUT)
 *   **Mirror Language Usage:** You MUST mirror the user's language usage proportionally. 
-*   **Stream A (User Insights):** If the input is primarily English with specific Chinese phrases, the structural narrative and English insights MUST remain in English. Preserve specific Chinese phrases, idiosyncratic definitions, or emotional outbursts in their original Chinese to capture the nuance. Do NOT force-translate the entire stream into one language if the input was mixed.
-*   **Stream B (Literature):** Defaults to English for technical definitions unless the concepts are uniquely Chinese."""
+*   **NO PINYIN:** Do NOT use Pinyin for Chinese names, entities, or concepts (e.g., use "风九" not "Feng Jiu", "锦衣还" not "Jinyihuan"). Using Pinyin is a violation of the High-Fidelity Mandate.
+*   **PRESERVE ORIGINAL IDIOMS (CRITICAL):** Do NOT translate specific Chinese idioms, metaphors, or phrases that capture "spirit" or "vibe" into English. 
+    *   **NO PARENTHETICAL TRANSLATIONS:** Do NOT use parentheses to provide translations (e.g., "Original (Translation)" or "Translation (Original)"). Use the user's original language/phrasing directly.
+    *   *Correct:* "I maintain a '不说破，但我看好你' silent agreement."
+    *   *Incorrect:* "I maintain a '不说破，但我看好你' (not speaking it out, but having faith in you) silent agreement."
+    *   *Incorrect:* "I maintain a 'tacit understanding' (不说破，但我看好你) silent agreement."
+*   **Stream A (User Insights):** If the input is primarily English with specific Chinese phrases, the structural narrative and English insights MUST remain in English. Preserve specific Chinese phrases, names, idiosyncratic definitions, or emotional outbursts in their original **Chinese characters** to capture the nuance.
+*   **Stream B (Literature):** Defaults to English for technical definitions unless the concepts are uniquely Chinese or the user adopted specific Chinese framing."""
 
 TAGGING_MANDATE = """#### THE 5-DIMENSION TAGGING MANDATE (CRITICAL)
 For every insight in Stream A, you MUST classify it into one or more of these 5 dimensions if applicable, applying the specific Tagging pattern:
